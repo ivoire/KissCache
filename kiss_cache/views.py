@@ -13,36 +13,43 @@ from kiss_cache.models import Resource
 
 
 @require_safe
-def api_fetch(request, url):
+def api_fetch(request, filename):
+    # TODO: handle HEAD requests
+    url = request.GET.get("url")
     ttl = request.GET.get("ttl")
 
-    print(request.GET)
-    if len(request.GET.keys()):
-        url = url + "?" + urlencode(request.GET)
-    print(url)
     # Check parameters
+    if url is None:
+        return HttpResponseBadRequest("'url' should be specified")
     if ttl is None:
         ttl = settings.DEFAULT_TTL
-
-    filename = "index.html"
+    # Parse the TTL
+    try:
+        ttl = Resource.parse_ttl(ttl)
+    except Exception:
+        return HttpResponseBadRequest("Invalid 'ttl' value")
 
     try:
+        # TODO: remove in case of exception in this function
         res, created = Resource.objects.get_or_create(url=url, filename=filename)
-    except IntegrityError:
+    except IntegrityError as exc:
+        print(exc)
         res = Resource.objects.get(url=url)
         created = False
 
     # parse and set the ttl
-    res.set_ttl(ttl)
+    res.ttl = ttl
     res.save()
 
     base = pathlib.Path(settings.DOWNLOAD_PATH)
     # If needed, fetch the url
     if created:
-        res.set_path()
+        # Set the path
+        res.path = Resource.compute_path(res.url, res.filename)
         res.save()
+
         (base / res.path).mkdir(mode=0o755, parents=True, exist_ok=True)
-        with (base / res.path / res.filename).open(mode="wb") as f_in:
+        with res.open(mode="wb") as f_in:
             req = requests.get(url, stream=True, timeout=settings.DOWNLOAD_TIMEOUT)
             for data in req.iter_content(chunk_size=settings.DOWNLOAD_CHUNK_SIZE, decode_unicode=False):
                 f_in.write(data)
@@ -50,7 +57,7 @@ def api_fetch(request, url):
         res.state = Resource.STATE_COMPLETED
         res.save()
         # Send back the results
-        response = FileResponse((base / res.path / res.filename).open("rb"))
+        response = FileResponse(res.open("rb"))
         response["Content-Disposition"] = "attachment; filename=%s" % res.filename
         return response
     else:
@@ -58,11 +65,16 @@ def api_fetch(request, url):
             # Loop until the download is finished
             while True:
                 time.sleep(1)
-                res.refresh_from_db()
+                try:
+                    res.refresh_from_db()
+                except Resource.DoesNotExist:
+                    # The object was removed from the db => failure
+                    res.state = Resource.STATE_FAILED
+
                 if res.state != Resource.STATE_DOWNLOADING:
                     break
             if res.state == Resource.STATE_COMPLETED:
-                response = FileResponse((base / res.path / res.filename).open("rb"))
+                response = FileResponse(res.open("rb"))
                 response["Content-Disposition"] = "attachment; filename=%s" % res.filename
                 return response
             elif res.state == Resource.STATE_FAILED:
@@ -70,7 +82,7 @@ def api_fetch(request, url):
                 
         elif res.state == Resource.STATE_COMPLETED:
             # Just return the file
-            response = FileResponse((base / res.path / res.filename).open("rb"))
+            response = FileResponse(res.open("rb"))
             response["Content-Disposition"] = "attachment; filename=%s" % res.filename
             return response
         elif res.state == Resource.STATE_FAILED:

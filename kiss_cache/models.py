@@ -9,8 +9,9 @@ from django.conf import settings
 class Resource(models.Model):
     url = models.URLField(unique=True)
     ttl = models.PositiveSmallIntegerField(default=60 * 60 * 24)
-    path = models.CharField(max_length=65)
+    path = models.CharField(max_length=65, blank=True, null=True)
     filename = models.CharField(max_length=1024)
+    last_access = models.DateTimeField(blank=True, null=True)
 
     STATE_DOWNLOADING, STATE_COMPLETED, STATE_FAILED = range(3)
     STATE_CHOICES = (
@@ -21,21 +22,27 @@ class Resource(models.Model):
     state = models.IntegerField(choices=STATE_CHOICES, default=STATE_DOWNLOADING)
 
     # Parse the ttl
-    def set_ttl(self, ttl):
+    @classmethod
+    def parse_ttl(cls, ttl):
         if ttl.endswith("d"):
-            self.ttl = int(ttl[:-1]) * 60 * 60 * 24
+            return int(ttl[:-1]) * 60 * 60 * 24
         elif ttl.endswith("h"):
-            self.ttl = int(ttl[:-1]) * 60 * 60
+            return int(ttl[:-1]) * 60 * 60
         elif ttl.endswith("m"):
-            self.ttl = int(ttl[:-1]) * 60
+            return int(ttl[:-1]) * 60
         elif ttl.endswith("s"):
-            self.ttl = int(ttl[:-1])
+            return int(ttl[:-1])
         else:
             raise NotImplementedError("Unknow TTL value")
 
-    def set_path(self):
+    # Compute the path
+    @classmethod
+    def compute_path(self, url, filename):
         m = hashlib.sha256()
-        m.update(self.url.encode("utf-8"))
-        m.update(self.filename.encode("utf-8"))
+        m.update(url.encode("utf-8"))
+        m.update(filename.encode("utf-8"))
         data = m.hexdigest()
-        self.path = str(pathlib.Path(data[0:2]) / data[2:])
+        return str(pathlib.Path(data[0:2]) / data[2:])
+
+    def open(self, mode):
+        return (pathlib.Path(settings.DOWNLOAD_PATH) / self.path / self.filename).open(mode)
