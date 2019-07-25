@@ -26,7 +26,7 @@ def resources(request):
     except (PageNotAnInteger, EmptyPage):
         return HttpResponseBadRequest()
 
-    return render(request, "kiss_cache/resources.html", {"resources" : page})
+    return render(request, "kiss_cache/resources.html", {"resources": page})
 
 
 @require_safe
@@ -55,7 +55,9 @@ def api_fetch(request, filename):
         created = False
 
     # Set the last usage and increase the counter
-    Resource.objects.filter(url=url, filename=filename).update(usage=F("usage") + 1, last_usage=Now())
+    Resource.objects.filter(url=url, filename=filename).update(
+        usage=F("usage") + 1, last_usage=Now()
+    )
 
     # parse and set the ttl
     res.refresh_from_db()

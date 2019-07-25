@@ -7,19 +7,32 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Resource',
+            name="Resource",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('url', models.URLField(unique=True)),
-                ('ttl', models.PositiveSmallIntegerField(default=86400)),
-                ('path', models.CharField(max_length=65)),
-                ('filename', models.CharField(max_length=1024)),
-                ('state', models.IntegerField(choices=[(0, 'Downloading'), (1, 'Completed'), (2, 'Failed')], default=0)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("url", models.URLField(unique=True)),
+                ("ttl", models.PositiveSmallIntegerField(default=86400)),
+                ("path", models.CharField(max_length=65)),
+                ("filename", models.CharField(max_length=1024)),
+                (
+                    "state",
+                    models.IntegerField(
+                        choices=[(0, "Downloading"), (1, "Completed"), (2, "Failed")],
+                        default=0,
+                    ),
+                ),
             ],
-        ),
+        )
     ]

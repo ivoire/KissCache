@@ -13,7 +13,8 @@ class ResourceAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self, _, obj=None):
         if obj:
-            return self.readonly_fields + ("filename", "path", "url",)
+            return self.readonly_fields + ("filename", "path", "url")
         return self.readonly_fields
+
 
 admin.site.register(Resource, ResourceAdmin)

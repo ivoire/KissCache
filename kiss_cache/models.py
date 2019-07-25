@@ -48,10 +48,16 @@ class Resource(models.Model):
         return str(pathlib.Path(data[0:2]) / data[2:])
 
     def size(self):
-        return (pathlib.Path(settings.DOWNLOAD_PATH) / self.path / self.filename).stat().st_size
+        return (
+            (pathlib.Path(settings.DOWNLOAD_PATH) / self.path / self.filename)
+            .stat()
+            .st_size
+        )
 
     def open(self, mode):
-        return (pathlib.Path(settings.DOWNLOAD_PATH) / self.path / self.filename).open(mode)
+        return (pathlib.Path(settings.DOWNLOAD_PATH) / self.path / self.filename).open(
+            mode
+        )
 
     def stream(self):
         with self.open("rb") as f_in:
@@ -82,7 +88,9 @@ class Resource(models.Model):
     def fetch(self):
         req = requests.get(self.url, stream=True, timeout=settings.DOWNLOAD_TIMEOUT)
         with self.open(mode="wb") as f_out:
-            for data in req.iter_content(chunk_size=settings.DOWNLOAD_CHUNK_SIZE, decode_unicode=False):
+            for data in req.iter_content(
+                chunk_size=settings.DOWNLOAD_CHUNK_SIZE, decode_unicode=False
+            ):
                 f_out.write(data)
                 yield data
         self.state = Resource.STATE_COMPLETED
