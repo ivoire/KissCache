@@ -1,7 +1,6 @@
 import hashlib
 import pathlib
 import requests
-from urllib.parse import urlparse
 
 from django.db import models
 from django.conf import settings
@@ -40,7 +39,7 @@ class Resource(models.Model):
 
     # Compute the path
     @classmethod
-    def compute_path(self, url, filename):
+    def compute_path(cls, url, filename):
         m = hashlib.sha256()
         m.update(url.encode("utf-8"))
         m.update(filename.encode("utf-8"))

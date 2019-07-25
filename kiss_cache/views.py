@@ -1,14 +1,16 @@
 import pathlib
-import requests
-import time
-from urllib.parse import urlencode
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db import IntegrityError
 from django.db.models import F
 from django.db.models.functions import Now
 from django.conf import settings
-from django.http import FileResponse, HttpResponseBadRequest, StreamingHttpResponse
+from django.http import (
+    FileResponse,
+    Http404,
+    HttpResponseBadRequest,
+    StreamingHttpResponse,
+)
 from django.shortcuts import render
 from django.views.decorators.http import require_safe
 
@@ -88,6 +90,6 @@ def api_fetch(request, filename):
             return response
         elif res.state == Resource.STATE_FAILED:
             # TODO: raise an error?
-            ea
+            raise Http404
         else:
             raise NotImplementedError("new state value?")
