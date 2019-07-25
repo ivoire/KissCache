@@ -5,24 +5,20 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('kiss_cache', '0001_initial'),
-    ]
+    dependencies = [("kiss_cache", "0001_initial")]
 
     operations = [
         migrations.AddField(
-            model_name='resource',
-            name='last_usage',
+            model_name="resource",
+            name="last_usage",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='resource',
-            name='usage',
-            field=models.IntegerField(default=0),
+            model_name="resource", name="usage", field=models.IntegerField(default=0)
         ),
         migrations.AlterField(
-            model_name='resource',
-            name='path',
+            model_name="resource",
+            name="path",
             field=models.CharField(blank=True, max_length=65, null=True),
         ),
     ]
