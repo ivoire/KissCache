@@ -1,0 +1,56 @@
+{% extends 'kiss_cache/base.html' %}
+
+{% block title %} - Home{% endblock %}
+
+{% block nav_home %}active{% endblock %}
+
+{% block style %}
+    :root {
+      --jumbotron-padding-y: 1rem;
+    }
+    .jumbotron {
+      padding-top: var(--jumbotron-padding-y);
+      padding-bottom: var(--jumbotron-padding-y);
+      margin-bottom: 0;
+      background-color: #fff;
+    }
+    @media (min-width: 768px) {
+      .jumbotron {
+        padding-top: calc(var(--jumbotron-padding-y) * 2);
+        padding-bottom: calc(var(--jumbotron-padding-y) * 2);
+      }
+    }
+    .jumbotron p:last-child {
+      margin-bottom: 0;
+    }
+    .jumbotron-heading {
+      font-weight: 300;
+    }
+    .jumbotron .container {
+      max-width: 40rem;
+    }
+{% endblock %}
+
+{% block body %}
+<div class="jumbotron text-center">
+  <div class="container">
+    <h1>Welcome to Kiss Cache</h1>
+    <p class="lead text-muted"><em>Kiss Cache</em> is pretty simple caching service</p>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col">
+    <h2>Resources</h2>
+    <p>List the resources currently cached.</p>
+    <p><a href="{% url 'resources' %}" class="btn btn-primary my-2">Resources</a></p>
+  </div>
+
+  <div class="col">
+    <h2>Usage</h2>
+    <p>Some number of the usage of this instance.</p>
+    <p><a href="{% url 'usage' %}" class="btn btn-primary my-2">Usage</a></p>
+  </div>
+
+</div>
+{% endblock body %}

@@ -13,7 +13,8 @@ class Resource(models.Model):
     ttl = models.PositiveSmallIntegerField(default=60 * 60 * 24)
     path = models.CharField(max_length=65, blank=True, null=True)
     filename = models.CharField(max_length=1024)
-    last_access = models.DateTimeField(blank=True, null=True)
+    last_usage = models.DateTimeField(blank=True, null=True)
+    usage = models.IntegerField(default=0)
 
     STATE_DOWNLOADING, STATE_COMPLETED, STATE_FAILED = range(3)
     STATE_CHOICES = (
@@ -45,6 +46,9 @@ class Resource(models.Model):
         m.update(filename.encode("utf-8"))
         data = m.hexdigest()
         return str(pathlib.Path(data[0:2]) / data[2:])
+
+    def size(self):
+        return (pathlib.Path(settings.DOWNLOAD_PATH) / self.path / self.filename).stat().st_size
 
     def open(self, mode):
         return (pathlib.Path(settings.DOWNLOAD_PATH) / self.path / self.filename).open(mode)
@@ -82,4 +86,4 @@ class Resource(models.Model):
                 f_out.write(data)
                 yield data
         self.state = Resource.STATE_COMPLETED
-        self.save()
+        self.save(update_fields=["state"])

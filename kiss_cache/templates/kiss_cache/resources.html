@@ -1,0 +1,45 @@
+{% extends 'kiss_cache/base.html' %}
+{% load static %}
+
+{% block title %} - Resources{% endblock %}
+
+{% block nav_resources %}active{% endblock %}
+
+{% block body %}
+<div class="row">
+  <div class="col">
+    <h2>Resources</h2>
+    <table class="table table-striped">
+      <thead class="thead-light">
+        <tr>
+          <th>URL</th>
+          <th>Last</th>
+          <th>Usage</th>
+          <th>TTL</th>
+          <th>Size</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for res in resources %}
+        <tr>
+          <td title="{{ res.url }}"><a href="{% url 'api.fetch' res.filename %}?url={{ res.url|iriencode }}">{{ res.url|truncatechars:80 }}</a> <a href="{{ res.url }}"><i class="fa fa-link float-right"></i></a></td>
+          <td title="{{ res.last_usage|date:"c" }}">{{ res.last_usage|timesince }}</td>
+          <td>{{ res.usage }}</td>
+          <td>{{ res.ttl }}</td>
+          {% with res.size as size %}
+          <td title="{{ size }}">{{ size|filesizeformat }}</td>
+          {% endwith %}
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% if resources.has_previous %}
+    <a href="?page={{ resources.previous_page_number }}{% if get_string %}&{{ get_string }}{% endif %}" class="btn btn-info"><i class="fas fa-backward"></i> Previous</a>
+    {% endif %}
+    {% if resources.has_next %}
+    <a href="?page={{ resources.next_page_number }}{% if get_string %}&{{ get_string }}{% endif %}" class="btn btn-info float-right">Next <i class="fas fa-forward"></i></a>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock body %}

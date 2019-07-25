@@ -4,7 +4,7 @@ from kiss_cache.models import Resource
 
 
 class ResourceAdmin(admin.ModelAdmin):
-    list_display = ("url", "filepath", "state", "ttl")
+    list_display = ("url", "filepath", "state", "ttl", "usage")
     list_filter = ("state", "ttl")
     ordering = ["url"]
 

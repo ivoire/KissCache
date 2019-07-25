@@ -1,0 +1,54 @@
+<!DOCTYPE html>{% load static %}
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" href="{% static "kiss_cache/css/bootstrap-v4.2.1.min.css" %}">
+  <link rel="stylesheet" href="{% static "kiss_cache/css/fontawesome-v5.4.1.min.css" %}">
+  {% block head %}{% endblock head %}
+  <style>
+    body > .container {
+      padding: 30px 15px 0;
+    }
+    {% block style %}{% endblock style %}
+  </style>
+
+  <title>KISS Cache{% block title %}{% endblock %}</title>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+    <a class="navbar-brand" href="https://federation.lavasoftware.org"><i class="fab fa-trade-federation"></i></a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsToggle" aria-controls="navbarsToggle" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarsToggle">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item {% block nav_home %}{% endblock %}">
+          <a class="nav-link" href="{% url "home" %}">Home <span class="sr-only">(current)</span></a>
+        </li>
+        <li class="nav-item {% block nav_resources %}{% endblock %}">
+          <a class="nav-link" href="{% url "resources" %}">Resources</a>
+        </li>
+        <li class="nav-item {% block nav_usage %}{% endblock %}">
+          <a class="nav-link" href="{% url "usage" %}">Usage</a>
+        </li>
+        <li class="nav-item {% block nav_help %}{% endblock %}">
+          <a class="nav-link" href="#">help</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="container">
+  {% block body %}{% endblock body %}
+  </main>
+
+  <script src="{% static "kiss_cache/js/jquery-v3.4.1.min.js" %}"></script>
+  <script src="{% static "kiss_cache/js/popper-v1.14.6.min.js" %}"></script>
+  <script src="{% static "kiss_cache/js/bootstrap-v4.2.1.min.js" %}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
