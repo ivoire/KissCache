@@ -57,3 +57,9 @@ sast:
     DOCKER_DRIVER: overlay2
     SAST_DEFAULT_ANALYZERS: "bandit"
 
+#########
+# Build #
+#########
+docker:
+  <<: *dind
+  stage: build
