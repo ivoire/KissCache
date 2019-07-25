@@ -1,9 +1,11 @@
 import hashlib
 import pathlib
+import requests
 from urllib.parse import urlparse
 
 from django.db import models
 from django.conf import settings
+from django.http import Http404
 
 
 class Resource(models.Model):
@@ -46,3 +48,38 @@ class Resource(models.Model):
 
     def open(self, mode):
         return (pathlib.Path(settings.DOWNLOAD_PATH) / self.path / self.filename).open(mode)
+
+    def stream(self):
+        with self.open("rb") as f_in:
+            while True:
+                # Send as most data as possible
+                data = f_in.read()
+                while data:
+                    yield data
+                    data = f_in.read()
+
+                # Are we done with downloading?
+                try:
+                    self.refresh_from_db()
+                except Resource.DoesNotExist:
+                    # The object was removed from the db => failure
+                    self.state = Resource.STATE_FAILED
+                if self.state != Resource.STATE_DOWNLOADING:
+                    break
+            # Send the remaining data
+            data = f_in.read()
+            while data:
+                yield data
+                data = f_in.read()
+
+        if self.state == Resource.STATE_FAILED:
+            raise Http404("Resource was removed")
+
+    def fetch(self):
+        req = requests.get(self.url, stream=True, timeout=settings.DOWNLOAD_TIMEOUT)
+        with self.open(mode="wb") as f_out:
+            for data in req.iter_content(chunk_size=settings.DOWNLOAD_CHUNK_SIZE, decode_unicode=False):
+                f_out.write(data)
+                yield data
+        self.state = Resource.STATE_COMPLETED
+        self.save()

@@ -5,7 +5,7 @@ from urllib.parse import urlencode
 
 from django.db import IntegrityError
 from django.conf import settings
-from django.http import FileResponse
+from django.http import FileResponse, StreamingHttpResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_safe
 
@@ -49,37 +49,15 @@ def api_fetch(request, filename):
         res.save()
 
         (base / res.path).mkdir(mode=0o755, parents=True, exist_ok=True)
-        with res.open(mode="wb") as f_in:
-            req = requests.get(url, stream=True, timeout=settings.DOWNLOAD_TIMEOUT)
-            for data in req.iter_content(chunk_size=settings.DOWNLOAD_CHUNK_SIZE, decode_unicode=False):
-                f_in.write(data)
-        # TODO: Handle errors
-        res.state = Resource.STATE_COMPLETED
-        res.save()
-        # Send back the results
-        response = FileResponse(res.open("rb"))
+        # Stream back the results
+        response = StreamingHttpResponse(res.fetch())
         response["Content-Disposition"] = "attachment; filename=%s" % res.filename
         return response
     else:
         if res.state == Resource.STATE_DOWNLOADING:
-            # Loop until the download is finished
-            while True:
-                time.sleep(1)
-                try:
-                    res.refresh_from_db()
-                except Resource.DoesNotExist:
-                    # The object was removed from the db => failure
-                    res.state = Resource.STATE_FAILED
-
-                if res.state != Resource.STATE_DOWNLOADING:
-                    break
-            if res.state == Resource.STATE_COMPLETED:
-                response = FileResponse(res.open("rb"))
-                response["Content-Disposition"] = "attachment; filename=%s" % res.filename
-                return response
-            elif res.state == Resource.STATE_FAILED:
-                srg
-                
+            response = StreamingHttpResponse(res.stream())
+            response["Content-Disposition"] = "attachment; filename=%s" % res.filename
+            return response
         elif res.state == Resource.STATE_COMPLETED:
             # Just return the file
             response = FileResponse(res.open("rb"))
