@@ -2,7 +2,7 @@
 DOWNLOAD_TIMEOUT = 10 * 60
 
 # base directory
-DOWNLOAD_PATH = "/tmp/brute_cache"
+DOWNLOAD_PATH = "/tmp/kiss_cache"
 
 DOWNLOAD_CHUNK_SIZE = 1024
 
