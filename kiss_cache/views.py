@@ -1,4 +1,5 @@
 import pathlib
+import time
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db import IntegrityError
@@ -15,6 +16,7 @@ from django.shortcuts import render
 from django.views.decorators.http import require_safe
 
 from kiss_cache.models import Resource
+from kiss_cache.tasks import fetch
 
 
 def index(request):
@@ -66,30 +68,36 @@ def api_fetch(request, filename):
     res.ttl = ttl
     res.save(update_fields=["ttl"])
 
-    base = pathlib.Path(settings.DOWNLOAD_PATH)
     # If needed, fetch the url
     if created:
         # Set the path
         res.path = Resource.compute_path(res.url, res.filename)
         res.save(update_fields=["path"])
 
-        (base / res.path).mkdir(mode=0o755, parents=True, exist_ok=True)
-        # Stream back the results
-        response = StreamingHttpResponse(res.fetch())
+        # Schedule the fetch task
+        fetch.delay(res.url)
+
+    if res.state == Resource.STATE_SCHEDULED:
+        # Wait for the task to start
+        # TODO: add timeout
+        while True:
+            res.refresh_from_db()
+            if res.state != Resource.STATE_SCHEDULED:
+                break
+            time.sleep(1)
+
+    # The task has been started.
+    if res.state == Resource.STATE_DOWNLOADING:
+        response = StreamingHttpResponse(res.stream())
         response["Content-Disposition"] = "attachment; filename=%s" % res.filename
         return response
+    elif res.state == Resource.STATE_COMPLETED:
+        # Just return the file
+        response = FileResponse(res.open("rb"))
+        response["Content-Disposition"] = "attachment; filename=%s" % res.filename
+        return response
+    elif res.state == Resource.STATE_FAILED:
+        # TODO: raise an error?
+        raise Http404
     else:
-        if res.state == Resource.STATE_DOWNLOADING:
-            response = StreamingHttpResponse(res.stream())
-            response["Content-Disposition"] = "attachment; filename=%s" % res.filename
-            return response
-        elif res.state == Resource.STATE_COMPLETED:
-            # Just return the file
-            response = FileResponse(res.open("rb"))
-            response["Content-Disposition"] = "attachment; filename=%s" % res.filename
-            return response
-        elif res.state == Resource.STATE_FAILED:
-            # TODO: raise an error?
-            raise Http404
-        else:
-            raise NotImplementedError("new state value?")
+        raise NotImplementedError("new state value?")

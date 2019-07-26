@@ -1,6 +1,7 @@
 import hashlib
 import pathlib
 import requests
+import time
 
 from django.db import models
 from django.conf import settings
@@ -15,13 +16,14 @@ class Resource(models.Model):
     last_usage = models.DateTimeField(blank=True, null=True)
     usage = models.IntegerField(default=0)
 
-    STATE_DOWNLOADING, STATE_COMPLETED, STATE_FAILED = range(3)
+    STATE_SCHEDULED, STATE_DOWNLOADING, STATE_COMPLETED, STATE_FAILED = range(4)
     STATE_CHOICES = (
+        (STATE_SCHEDULED, "Scheduled"),
         (STATE_DOWNLOADING, "Downloading"),
         (STATE_COMPLETED, "Completed"),
         (STATE_FAILED, "Failed"),
     )
-    state = models.IntegerField(choices=STATE_CHOICES, default=STATE_DOWNLOADING)
+    state = models.IntegerField(choices=STATE_CHOICES, default=STATE_SCHEDULED)
 
     # Parse the ttl
     @classmethod
@@ -69,6 +71,7 @@ class Resource(models.Model):
 
                 # Are we done with downloading?
                 try:
+                    time.sleep(1)
                     self.refresh_from_db()
                 except Resource.DoesNotExist:
                     # The object was removed from the db => failure
@@ -83,14 +86,3 @@ class Resource(models.Model):
 
         if self.state == Resource.STATE_FAILED:
             raise Http404("Resource was removed")
-
-    def fetch(self):
-        req = requests.get(self.url, stream=True, timeout=settings.DOWNLOAD_TIMEOUT)
-        with self.open(mode="wb") as f_out:
-            for data in req.iter_content(
-                chunk_size=settings.DOWNLOAD_CHUNK_SIZE, decode_unicode=False
-            ):
-                f_out.write(data)
-                yield data
-        self.state = Resource.STATE_COMPLETED
-        self.save(update_fields=["state"])
