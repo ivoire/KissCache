@@ -10,7 +10,7 @@ from django.http import Http404
 
 class Resource(models.Model):
     url = models.URLField(unique=True)
-    ttl = models.PositiveSmallIntegerField(default=60 * 60 * 24)
+    ttl = models.IntegerField(default=60 * 60 * 24)
     path = models.CharField(max_length=65, blank=True, null=True)
     filename = models.CharField(max_length=1024)
     last_usage = models.DateTimeField(blank=True, null=True)
@@ -27,17 +27,21 @@ class Resource(models.Model):
 
     # Parse the ttl
     @classmethod
-    def parse_ttl(cls, ttl):
-        if ttl.endswith("d"):
-            return int(ttl[:-1]) * 60 * 60 * 24
-        elif ttl.endswith("h"):
-            return int(ttl[:-1]) * 60 * 60
-        elif ttl.endswith("m"):
-            return int(ttl[:-1]) * 60
-        elif ttl.endswith("s"):
-            return int(ttl[:-1])
+    def parse_ttl(cls, val):
+        if val.endswith("d"):
+            ttl = int(val[:-1]) * 60 * 60 * 24
+        elif val.endswith("h"):
+            ttl = int(val[:-1]) * 60 * 60
+        elif val.endswith("m"):
+            ttl = int(val[:-1]) * 60
+        elif val.endswith("s"):
+            ttl = int(val[:-1])
         else:
             raise NotImplementedError("Unknow TTL value")
+
+        if ttl <= 0:
+            raise Exception("The TTL should be positive")
+        return ttl
 
     # Compute the path
     @classmethod
