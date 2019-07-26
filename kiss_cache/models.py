@@ -49,11 +49,14 @@ class Resource(models.Model):
         return str(pathlib.Path(data[0:2]) / data[2:])
 
     def size(self):
-        return (
-            (pathlib.Path(settings.DOWNLOAD_PATH) / self.path / self.filename)
-            .stat()
-            .st_size
-        )
+        try:
+            return (
+                (pathlib.Path(settings.DOWNLOAD_PATH) / self.path / self.filename)
+                .stat()
+                .st_size
+            )
+        except:
+            return "??"
 
     def open(self, mode):
         return (pathlib.Path(settings.DOWNLOAD_PATH) / self.path / self.filename).open(
