@@ -1,6 +1,5 @@
 import hashlib
 import pathlib
-import requests
 import time
 
 from django.db import models
