@@ -1,0 +1,51 @@
+version: "3.7"
+services:
+  db:
+    image: ${KC_POSTGRES_IMAGE}
+    container_name: kc-db
+    environment:
+      POSTGRES_USER: kiss-cache
+      POSTGRES_PASSWORD: kiss-cache-passwd
+    volumes:
+    - db:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  celery:
+    container_name: kc-celery-workers
+    image: ${KC_IMAGE}
+    user: kiss-cache
+    environment:
+      SERVICE: celery
+    volumes:
+    - cache:/var/cache/kiss-cache/
+    - ./share/kiss-cache.yaml:/etc/kiss-cache.yaml
+    depends_on:
+    - db
+    - redis
+    restart: unless-stopped
+
+  redis:
+    container_name: kc-redis
+    image: ${KC_REDIS_IMAGE}
+    restart: unless-stopped
+
+  web:
+    container_name: kc-web
+    image: ${KC_IMAGE}
+    volumes:
+    - cache:/var/cache/kiss-cache/
+    - ./share/kiss-cache.yaml:/etc/kiss-cache.yaml
+    depends_on:
+    - db
+    - redis
+    environment:
+      SERVICE: gunicorn
+    ports:
+    - 8000:80
+    restart: unless-stopped
+
+volumes:
+  db:
+    name: kiss-cache-db
+  cache:
+    name: kiss-cache-cache

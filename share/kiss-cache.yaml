@@ -1,0 +1,8 @@
+DATABASES:
+  default:
+    ENGINE: "django.db.backends.postgresql_psycopg2"
+    NAME: "kiss-cache"
+    USER: "kiss-cache"
+    PASSWORD: "kiss-cache-passwd"
+    HOST: "db"
+    PORT: "5432"
