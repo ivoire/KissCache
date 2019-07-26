@@ -53,8 +53,7 @@ def api_fetch(request, filename):
     try:
         # TODO: remove in case of exception in this function
         res, created = Resource.objects.get_or_create(url=url, filename=filename)
-    except IntegrityError as exc:
-        print(exc)
+    except IntegrityError:
         res = Resource.objects.get(url=url)
         created = False
 
