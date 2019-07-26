@@ -21,9 +21,12 @@ MIDDLEWARE = [
 WHITENOISE_KEEP_ONLY_HASHED_FILES = True
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
+# Celery settings
+CELERY_BROKER_URL = 'redis://redis:6379/0'
+
 # Load settings from the configuration file
 with contextlib.suppress(FileNotFoundError):
-    data = pathlib.Path("/etc/kisscache.yaml").read_text(encoding="utf-8")
+    data = pathlib.Path("/etc/kiss-cache.yaml").read_text(encoding="utf-8")
     for (k, v) in yaml.safe_load(data).items():
         globals()[k] = v
 
