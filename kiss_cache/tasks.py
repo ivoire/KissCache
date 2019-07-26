@@ -13,8 +13,13 @@ def fetch(url):
     res = Resource.objects.get(url=url)
 
     # Create the directory
-    base = pathlib.Path(settings.DOWNLOAD_PATH)
-    (base / res.path).mkdir(mode=0o755, parents=True, exist_ok=True)
+    try:
+        base = pathlib.Path(settings.DOWNLOAD_PATH)
+        (base / res.path).mkdir(mode=0o755, parents=True, exist_ok=True)
+    except OSError:
+        res.state = Resource.STATE_FAILED
+        res.save(update_fields=["state"])
+        raise
 
     # Download the resource
     req = requests.get(res.url, stream=True, timeout=settings.DOWNLOAD_TIMEOUT)
