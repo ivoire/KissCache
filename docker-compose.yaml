@@ -41,7 +41,7 @@ services:
     environment:
       SERVICE: gunicorn
     ports:
-    - 8000:80
+    - 8001:80
     restart: unless-stopped
 
 volumes:
