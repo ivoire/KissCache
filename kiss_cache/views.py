@@ -7,7 +7,6 @@ from django.db.models.functions import Now
 from django.conf import settings
 from django.http import (
     FileResponse,
-    Http404,
     HttpResponse,
     HttpResponseBadRequest,
     StreamingHttpResponse,
@@ -41,7 +40,7 @@ def resources(request, page=1, state="successes"):
     elif state == "failures":
         query = query.filter(state=Resource.STATE_FINISHED).exclude(status_code=200)
     else:
-        raise HttpResponseBadRequest("Invalid state")
+        return HttpResponseBadRequest("Invalid state")
 
     paginator = Paginator(query, 25)
     try:

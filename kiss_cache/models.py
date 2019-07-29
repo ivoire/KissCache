@@ -5,7 +5,6 @@ import time
 
 from django.db import models
 from django.conf import settings
-from django.http import Http404
 
 
 class Resource(models.Model):
