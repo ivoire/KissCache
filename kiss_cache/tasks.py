@@ -15,7 +15,7 @@ def fetch(url):
     # Create the directory
     try:
         base = pathlib.Path(settings.DOWNLOAD_PATH)
-        (base / res.path).mkdir(mode=0o755, parents=True, exist_ok=True)
+        (base / res.path).parent.mkdir(mode=0o755, parents=True, exist_ok=True)
     except OSError:
         res.state = Resource.STATE_FAILED
         res.save(update_fields=["state"])

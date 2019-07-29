@@ -11,7 +11,6 @@ class Resource(models.Model):
     url = models.URLField(unique=True)
     ttl = models.IntegerField(default=60 * 60 * 24)
     path = models.CharField(max_length=65, blank=True, null=True)
-    filename = models.CharField(max_length=1024)
     last_usage = models.DateTimeField(blank=True, null=True)
     usage = models.IntegerField(default=0)
 
@@ -44,27 +43,20 @@ class Resource(models.Model):
 
     # Compute the path
     @classmethod
-    def compute_path(cls, url, filename):
+    def compute_path(cls, url):
         m = hashlib.sha256()
         m.update(url.encode("utf-8"))
-        m.update(filename.encode("utf-8"))
         data = m.hexdigest()
         return str(pathlib.Path(data[0:2]) / data[2:])
 
     def size(self):
         try:
-            return (
-                (pathlib.Path(settings.DOWNLOAD_PATH) / self.path / self.filename)
-                .stat()
-                .st_size
-            )
+            return (pathlib.Path(settings.DOWNLOAD_PATH) / self.path).stat().st_size
         except:
             return "??"
 
     def open(self, mode):
-        return (pathlib.Path(settings.DOWNLOAD_PATH) / self.path / self.filename).open(
-            mode
-        )
+        return (pathlib.Path(settings.DOWNLOAD_PATH) / self.path).open(mode)
 
     def stream(self):
         with self.open("rb") as f_in:

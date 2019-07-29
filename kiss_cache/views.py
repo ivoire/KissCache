@@ -33,7 +33,7 @@ def resources(request):
 
 
 @require_safe
-def api_fetch(request, filename):
+def api_fetch(request, filename=None):
     # TODO: handle HEAD requests
     url = request.GET.get("url")
     ttl = request.GET.get("ttl")
@@ -51,15 +51,13 @@ def api_fetch(request, filename):
 
     try:
         # TODO: remove in case of exception in this function
-        res, created = Resource.objects.get_or_create(url=url, filename=filename)
+        res, created = Resource.objects.get_or_create(url=url)
     except IntegrityError:
         res = Resource.objects.get(url=url)
         created = False
 
     # Set the last usage and increase the counter
-    Resource.objects.filter(url=url, filename=filename).update(
-        usage=F("usage") + 1, last_usage=Now()
-    )
+    Resource.objects.filter(url=url).update(usage=F("usage") + 1, last_usage=Now())
 
     # parse and set the ttl
     res.refresh_from_db()
@@ -69,7 +67,7 @@ def api_fetch(request, filename):
     # If needed, fetch the url
     if created:
         # Set the path
-        res.path = Resource.compute_path(res.url, res.filename)
+        res.path = Resource.compute_path(res.url)
         res.save(update_fields=["path"])
 
         # Schedule the fetch task
@@ -87,12 +85,14 @@ def api_fetch(request, filename):
     # The task has been started.
     if res.state == Resource.STATE_DOWNLOADING:
         response = StreamingHttpResponse(res.stream())
-        response["Content-Disposition"] = "attachment; filename=%s" % res.filename
+        if filename:
+            response["Content-Disposition"] = "attachment; filename=%s" % filename
         return response
     elif res.state == Resource.STATE_COMPLETED:
         # Just return the file
         response = FileResponse(res.open("rb"))
-        response["Content-Disposition"] = "attachment; filename=%s" % res.filename
+        if filename:
+            response["Content-Disposition"] = "attachment; filename=%s" % filename
         return response
     elif res.state == Resource.STATE_FAILED:
         # TODO: raise an error?

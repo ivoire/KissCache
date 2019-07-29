@@ -22,7 +22,7 @@
       <tbody>
       {% for res in resources %}
         <tr {% if res.state == res.STATE_DOWNLOADING %} class="table-warning"{% elif res.state == res.STATE_FAILED %} class="table-danger"{% endif %}>
-          <td title="{{ res.url }}"><a href="{% url 'api.fetch' res.filename %}?url={{ res.url|iriencode }}">{{ res.url|truncatechars:80 }}</a> <a href="{{ res.url }}"><i class="fa fa-link float-right"></i></a></td>
+          <td title="{{ res.url }}"><a href="{% url 'api.fetch' %}?url={{ res.url|iriencode }}">{{ res.url|truncatechars:80 }}</a> <a href="{{ res.url }}"><i class="fa fa-link float-right"></i></a></td>
           <td title="{{ res.last_usage|date:"c" }}">{{ res.last_usage|timesince }}</td>
           <td>{{ res.usage }}</td>
           <td>{{ res.ttl }}</td>
