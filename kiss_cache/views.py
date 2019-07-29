@@ -8,6 +8,7 @@ from django.conf import settings
 from django.http import (
     FileResponse,
     Http404,
+    HttpResponse,
     HttpResponseBadRequest,
     StreamingHttpResponse,
 )
@@ -22,18 +23,44 @@ def index(request):
     return render(request, "kiss_cache/index.html", {})
 
 
-def resources(request):
+def resources(request, page=1, state="successes"):
     query = Resource.objects.order_by("url")
-    fetching = query.filter(state=Resource.STATE_DOWNLOADING)
+    scheduled = query.filter(state=Resource.STATE_SCHEDULED).count()
+    downloading = query.filter(state=Resource.STATE_DOWNLOADING).count()
+    successes = query.filter(state=Resource.STATE_FINISHED, status_code=200).count()
+    failures = (
+        query.filter(state=Resource.STATE_FINISHED).exclude(status_code=200).count()
+    )
 
-    paginator = Paginator(query.exclude(state=Resource.STATE_DOWNLOADING), 25)
+    if state == "scheduled":
+        query = query.filter(state=Resource.STATE_SCHEDULED)
+    elif state == "downloading":
+        query = query.filter(state=Resource.STATE_DOWNLOADING)
+    elif state == "successes":
+        query = query.filter(state=Resource.STATE_FINISHED, status_code=200)
+    elif state == "failures":
+        query = query.filter(state=Resource.STATE_FINISHED).exclude(status_code=200)
+    else:
+        raise HttpResponseBadRequest("Invalid state")
+
+    paginator = Paginator(query, 25)
     try:
-        page = paginator.page(request.GET.get("page", 1))
+        page = paginator.page(page)
     except (PageNotAnInteger, EmptyPage):
         return HttpResponseBadRequest()
 
     return render(
-        request, "kiss_cache/resources.html", {"resources": page, "fetching": fetching}
+        request,
+        "kiss_cache/resources.html",
+        {
+            "resources": page,
+            "state": state,
+            "url_name": "resources." + state,
+            "scheduled_count": scheduled,
+            "downloading_count": downloading,
+            "successes_count": successes,
+            "failures_count": failures,
+        },
     )
 
 
@@ -97,7 +124,11 @@ def api_fetch(request, filename=None):
         if filename:
             response["Content-Disposition"] = "attachment; filename=%s" % filename
         return response
-    elif res.state == Resource.STATE_COMPLETED:
+    elif res.state == Resource.STATE_FINISHED:
+        # Check the status code
+        if res.status_code != 200:
+            return HttpResponse(status=res.status_code)
+
         # Just return the file
         response = FileResponse(res.open("rb"))
         if res.content_type:
@@ -105,8 +136,5 @@ def api_fetch(request, filename=None):
         if filename:
             response["Content-Disposition"] = "attachment; filename=%s" % filename
         return response
-    elif res.state == Resource.STATE_FAILED:
-        # TODO: raise an error?
-        raise Http404
     else:
         raise NotImplementedError("new state value?")

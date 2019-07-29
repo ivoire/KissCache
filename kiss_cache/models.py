@@ -19,14 +19,14 @@ class Resource(models.Model):
     last_usage = models.DateTimeField(blank=True, null=True)
     usage = models.IntegerField(default=0)
 
-    STATE_SCHEDULED, STATE_DOWNLOADING, STATE_COMPLETED, STATE_FAILED = range(4)
+    STATE_SCHEDULED, STATE_DOWNLOADING, STATE_FINISHED = range(3)
     STATE_CHOICES = (
         (STATE_SCHEDULED, "Scheduled"),
         (STATE_DOWNLOADING, "Downloading"),
-        (STATE_COMPLETED, "Completed"),
-        (STATE_FAILED, "Failed"),
+        (STATE_FINISHED, "Finished"),
     )
     state = models.IntegerField(choices=STATE_CHOICES, default=STATE_SCHEDULED)
+    status_code = models.IntegerField(default=0)
 
     # Parse the ttl
     @classmethod
@@ -83,15 +83,19 @@ class Resource(models.Model):
                     time.sleep(1)
                     self.refresh_from_db()
                 except Resource.DoesNotExist:
-                    # The object was removed from the db => failure
-                    self.state = Resource.STATE_FAILED
-                if self.state != Resource.STATE_DOWNLOADING:
+                    # The object was removed from the db => 404
+                    self.status_code = 404
+                    self.state = Resource.STATE_FINISHED
+
+                if self.state == Resource.STATE_FINISHED:
                     break
+
+            # Check the status code
+            if self.status_code != 200:
+                raise Exception("status-code is not 200: %d" % self.status_code)
+
             # Send the remaining data
             data = f_in.read()
             while data:
                 yield data
                 data = f_in.read()
-
-        if self.state == Resource.STATE_FAILED:
-            raise Http404("Resource was removed")

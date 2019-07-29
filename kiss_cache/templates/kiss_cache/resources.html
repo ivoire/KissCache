@@ -8,63 +8,135 @@
 {% block body %}
 <div class="row">
   <div class="col">
-    <h2>Dowloading resources</h2>
-    <table class="table table-striped">
-      <thead class="thead-light">
-        <tr>
-          <th>URL</th>
-          <th>TTL</th>
-          <th>Size</th>
-          <th>Progress</th>
-        </tr>
-      </thead>
-      <tbody>
-      {% for res in fetching %}
-        <tr>
-          <td title="{{ res.url }}"><a href="{% url 'api.fetch' %}?url={{ res.url|iriencode }}">{{ res.url|truncatechars:80 }}</a> <a href="{{ res.url }}"><i class="fa fa-link float-right"></i></a></td>
-          <td>{{ res.ttl }}</td>
-          <td title="{{ res.content_length }}">{{ res.content_length|filesizeformat }}</td>
-          <td>
-            <div class="progress">
-              <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: {{ res.progress }}%" aria-valuenow="{{ res.progress }}" aria-valuemin="0" aria-valuemax="100"></div>
-            </td>
-          </td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-
     <h2>Resources</h2>
-    <table class="table table-striped">
-      <thead class="thead-light">
-        <tr>
-          <th>URL</th>
-          <th>Last</th>
-          <th>Usage</th>
-          <th>TTL</th>
-          <th>Size</th>
-        </tr>
-      </thead>
-      <tbody>
-      {% for res in resources %}
-        <tr {% if res.state == res.STATE_FAILED %} class="table-danger"{% endif %}>
-          <td title="{{ res.url }}"><a href="{% url 'api.fetch' %}?url={{ res.url|iriencode }}">{{ res.url|truncatechars:80 }}</a> <a href="{{ res.url }}"><i class="fa fa-link float-right"></i></a></td>
-          <td title="{{ res.last_usage|date:"c" }}">{{ res.last_usage|timesince }}</td>
-          <td>{{ res.usage }}</td>
-          <td>{{ res.ttl }}</td>
-          {% with res.size as size %}
-          <td title="{{ size }}">{{ size|filesizeformat }}</td>
-          {% endwith %}
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-    {% if resources.has_previous %}
-    <a href="?page={{ resources.previous_page_number }}{% if get_string %}&{{ get_string }}{% endif %}" class="btn btn-info"><i class="fas fa-backward"></i> Previous</a>
-    {% endif %}
-    {% if resources.has_next %}
-    <a href="?page={{ resources.next_page_number }}{% if get_string %}&{{ get_string }}{% endif %}" class="btn btn-info float-right">Next <i class="fas fa-forward"></i></a>
-    {% endif %}
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link text-secondary{% if state == "scheduled" %} active{% endif %}" href="{% url 'resources.scheduled' %}" role="tab" aria-selected="true">Scheduled <span class="badge badge-pill badge-secondary">{{ scheduled_count }}</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-info{% if state == "downloading" %} active{% endif %}" href="{% url 'resources.downloading' %}" role="tab" aria-selected="true">Downloading <span class="badge badge-pill badge-info">{{ downloading_count }}</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-success{% if state == "successes" %} active {% endif %}" href="{% url 'resources' %}" role="tab" aria-selected="true">Successes <span class="badge badge-pill badge-success">{{ successes_count }}</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-danger{% if state == "failures" %} active{% endif %}" href="{% url 'resources.failures' %}" role="tab" aria-selected="true">Failures <span class="badge badge-pill badge-danger">{{ failures_count }}</span></a>
+      </li>
+    </ul>
+
+    <div class="tab-content" id="myTabContent">
+      <div class="tab-pane fade show active" id="scheduled" role="tabpanel" aria-labelledby="scheduled-tab">
+        {% if state == "scheduled" %}
+        <table class="table table-striped">
+          <thead class="thead-light">
+            <tr>
+              <th>URL</th>
+              <th>TTL</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for res in resources %}
+            <tr>
+              <td title="{{ res.url }}"><a href="{% url 'api.fetch' %}?url={{ res.url|iriencode }}">{{ res.url|truncatechars:80 }}</a> <a href="{{ res.url }}"><i class="fa fa-link float-right"></i></a></td>
+              <td>{{ res.ttl }}</td>
+            </tr>
+          {% empty %}
+          <tr><td colspan="2"><i>...</i></td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        {% elif state == "downloading" %}
+        <table class="table table-striped">
+          <thead class="thead-light">
+            <tr>
+              <th>URL</th>
+              <th>TTL</th>
+              <th>Size</th>
+              <th>Progress</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for res in resources %}
+            <tr>
+              <td title="{{ res.url }}"><a href="{% url 'api.fetch' %}?url={{ res.url|iriencode }}">{{ res.url|truncatechars:80 }}</a> <a href="{{ res.url }}"><i class="fa fa-link float-right"></i></a></td>
+              <td>{{ res.ttl }}</td>
+              <td title="{{ res.content_length }}">{{ res.content_length|filesizeformat }}</td>
+              <td>
+                <div class="progress">
+                  <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: {{ res.progress }}%" aria-valuenow="{{ res.progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+                </td>
+              </td>
+            </tr>
+          {% empty %}
+          <tr><td colspan="4"><i>...</i></td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        {% elif state == "successes" %}
+        <table class="table table-striped">
+          <thead class="thead-light">
+            <tr>
+              <th>URL</th>
+              <th>Last usage</th>
+              <th>Count</th>
+              <th>TTL</th>
+              <th>Size</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for res in resources %}
+            <tr>
+              <td title="{{ res.url }}"><a href="{% url 'api.fetch' %}?url={{ res.url|iriencode }}">{{ res.url|truncatechars:80 }}</a><a href="{{ res.url }}" class="float-right"><i class="fa fa-link"></i></a></td>
+              <td title="{{ res.last_usage|date:"c" }}">{{ res.last_usage|timesince }}</td>
+              <td>{{ res.usage }}</td>
+              <td>{{ res.ttl }}</td>
+              {% with res.size as size %}
+              <td title="{{ size }}">{{ size|filesizeformat }}</td>
+              {% endwith %}
+            </tr>
+          {% empty %}
+          <tr><td colspan="5"><i>...</i></td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <table class="table table-striped">
+          <thead class="thead-light">
+            <tr>
+              <th>URL</th>
+              <th>code</th>
+              <th>Last usage</th>
+              <th>Count</th>
+              <th>TTL</th>
+              <th>Size</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for res in resources %}
+            <tr>
+              <td title="{{ res.url }}"><a href="{% url 'api.fetch' %}?url={{ res.url|iriencode }}">{{ res.url|truncatechars:80 }}</a><a href="{{ res.url }}" class="float-right"><i class="fa fa-link"></i></a></td>
+              <td>{{ res.status_code }}</td>
+              <td title="{{ res.last_usage|date:"c" }}">{{ res.last_usage|timesince }}</td>
+              <td>{{ res.usage }}</td>
+              <td>{{ res.ttl }}</td>
+              {% with res.size as size %}
+              <td title="{{ size }}">{{ size|filesizeformat }}</td>
+              {% endwith %}
+            </tr>
+          {% empty %}
+          <tr><td colspan="6"><i>...</i></td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        {% endif %}
+        {% if resources.has_previous %}
+        <a href="{% url url_name resources.previous_page_number %}" class="btn btn-info"><i class="fas fa-backward"></i> Previous</a>
+        {% endif %}
+        {% if resources.has_next %}
+        <a href="{% url url_name resources.next_page_number %}" class="btn btn-info float-right">Next <i class="fas fa-forward"></i></a>
+        {% endif %}
+      </div>
+    </div>
   </div>
 </div>
 

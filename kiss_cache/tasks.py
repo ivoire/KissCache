@@ -32,6 +32,15 @@ def fetch(url):
         timeout=settings.DOWNLOAD_TIMEOUT,
     )
 
+    # Save the status code
+    res.status_code = req.status_code
+    if res.status_code != 200:
+        res.state = Resource.STATE_FINISHED
+        res.save(update_fields=["state", "status_code"])
+        LOG.error("'%s' returned %d", url, res.status_code)
+        return
+    res.save(update_fields=["status_code"])
+
     # Store Content-Length and Content-Type
     res.content_length = req.headers.get("Content-Length")
     res.content_type = req.headers.get("Content-Type", "")
@@ -50,5 +59,5 @@ def fetch(url):
             f_out.write(data)
 
     # Mark the task as done
-    res.state = Resource.STATE_COMPLETED
+    res.state = Resource.STATE_FINISHED
     res.save(update_fields=["state"])
