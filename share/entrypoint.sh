@@ -78,7 +78,7 @@ then
   echo "done"
   echo ""
 
-  exec python3 -m celery -A website worker --loglevel=info
+  exec python3 -m celery -A website worker --loglevel=info --autoscale=1,10
 elif [ "$SERVICE" = "gunicorn" ]
 then
   echo "Applying migrations"
