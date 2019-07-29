@@ -21,7 +21,7 @@ def fetch(url):
     try:
         res = Resource.objects.get(url=url)
     except Resource.DoesNotExist:
-        LOG.error("Resource does not exist for '%s'", url)
+        LOG.error("Resource db object does not exist for '%s'", url)
         return
 
     # Create the directory
