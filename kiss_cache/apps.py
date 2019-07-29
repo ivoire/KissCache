@@ -2,4 +2,7 @@ from django.apps import AppConfig
 
 
 class KissCacheConfig(AppConfig):
-    name = "KissCache"
+    name = "kiss_cache"
+
+    def ready(self):
+        import kiss_cache.signals
