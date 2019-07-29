@@ -1,3 +1,4 @@
+import contextlib
 import hashlib
 import pathlib
 import time
@@ -53,11 +54,17 @@ class Resource(models.Model):
         data = m.hexdigest()
         return str(pathlib.Path(data[0:2]) / data[2:])
 
+    def progress(self):
+        size = self.size()
+        max_size = self.content_length
+        with contextlib.suppress(Exception):
+            return int(size / max_size * 100)
+        return "??"
+
     def size(self):
-        try:
+        with contextlib.suppress(Exception):
             return (pathlib.Path(settings.DOWNLOAD_PATH) / self.path).stat().st_size
-        except:
-            return "??"
+        return "??"
 
     def open(self, mode):
         return (pathlib.Path(settings.DOWNLOAD_PATH) / self.path).open(mode)

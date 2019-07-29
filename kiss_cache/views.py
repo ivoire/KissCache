@@ -23,13 +23,18 @@ def index(request):
 
 
 def resources(request):
-    paginator = Paginator(Resource.objects.order_by("url"), 25)
+    query = Resource.objects.order_by("url")
+    fetching = query.filter(state=Resource.STATE_DOWNLOADING)
+
+    paginator = Paginator(query.exclude(state=Resource.STATE_DOWNLOADING), 25)
     try:
         page = paginator.page(request.GET.get("page", 1))
     except (PageNotAnInteger, EmptyPage):
         return HttpResponseBadRequest()
 
-    return render(request, "kiss_cache/resources.html", {"resources": page})
+    return render(
+        request, "kiss_cache/resources.html", {"resources": page, "fetching": fetching}
+    )
 
 
 @require_safe

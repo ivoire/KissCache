@@ -8,6 +8,32 @@
 {% block body %}
 <div class="row">
   <div class="col">
+    <h2>Dowloading resources</h2>
+    <table class="table table-striped">
+      <thead class="thead-light">
+        <tr>
+          <th>URL</th>
+          <th>TTL</th>
+          <th>Size</th>
+          <th>Progress</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for res in fetching %}
+        <tr>
+          <td title="{{ res.url }}"><a href="{% url 'api.fetch' %}?url={{ res.url|iriencode }}">{{ res.url|truncatechars:80 }}</a> <a href="{{ res.url }}"><i class="fa fa-link float-right"></i></a></td>
+          <td>{{ res.ttl }}</td>
+          <td title="{{ res.content_length }}">{{ res.content_length|filesizeformat }}</td>
+          <td>
+            <div class="progress">
+              <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: {{ res.progress }}%" aria-valuenow="{{ res.progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+            </td>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+
     <h2>Resources</h2>
     <table class="table table-striped">
       <thead class="thead-light">
@@ -21,7 +47,7 @@
       </thead>
       <tbody>
       {% for res in resources %}
-        <tr {% if res.state == res.STATE_DOWNLOADING %} class="table-warning"{% elif res.state == res.STATE_FAILED %} class="table-danger"{% endif %}>
+        <tr {% if res.state == res.STATE_FAILED %} class="table-danger"{% endif %}>
           <td title="{{ res.url }}"><a href="{% url 'api.fetch' %}?url={{ res.url|iriencode }}">{{ res.url|truncatechars:80 }}</a> <a href="{{ res.url }}"><i class="fa fa-link float-right"></i></a></td>
           <td title="{{ res.last_usage|date:"c" }}">{{ res.last_usage|timesince }}</td>
           <td>{{ res.usage }}</td>
