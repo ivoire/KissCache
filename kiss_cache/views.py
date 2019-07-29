@@ -85,12 +85,18 @@ def api_fetch(request, filename=None):
     # The task has been started.
     if res.state == Resource.STATE_DOWNLOADING:
         response = StreamingHttpResponse(res.stream())
+        if res.content_length:
+            response["Content-Length"] = res.content_length
+        if res.content_type:
+            response["Content-Type"] = res.content_type
         if filename:
             response["Content-Disposition"] = "attachment; filename=%s" % filename
         return response
     elif res.state == Resource.STATE_COMPLETED:
         # Just return the file
         response = FileResponse(res.open("rb"))
+        if res.content_type:
+            response["Content-Type"] = res.content_type
         if filename:
             response["Content-Disposition"] = "attachment; filename=%s" % filename
         return response

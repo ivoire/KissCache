@@ -8,9 +8,13 @@ from django.http import Http404
 
 
 class Resource(models.Model):
+    # TODO: max_length=?
     url = models.URLField(unique=True)
     ttl = models.IntegerField(default=60 * 60 * 24)
+    # TODO: remove null=True
     path = models.CharField(max_length=65, blank=True, null=True)
+    content_length = models.IntegerField(blank=True, null=True)
+    content_type = models.CharField(max_length=256, blank=True)
     last_usage = models.DateTimeField(blank=True, null=True)
     usage = models.IntegerField(default=0)
 

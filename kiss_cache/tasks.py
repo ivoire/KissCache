@@ -22,9 +22,21 @@ def fetch(url):
         raise
 
     # Download the resource
-    req = requests.get(res.url, stream=True, timeout=settings.DOWNLOAD_TIMEOUT)
-    # TODO: save the size in the database?
-    #       will allow to print a nice progress bar
+    # * stream back the result
+    # * only accept plain content (not gziped) so Content-Length is known
+    # * with a timeout
+    req = requests.get(
+        res.url,
+        stream=True,
+        headers={"Accept-Encoding": ""},
+        timeout=settings.DOWNLOAD_TIMEOUT,
+    )
+
+    # Store Content-Length and Content-Type
+    res.content_length = req.headers.get("Content-Length")
+    res.content_type = req.headers.get("Content-Type", "")
+    res.save(update_fields=["content_length", "content_type"])
+
     # TODO: make this idempotent to allow for task restart
     with res.open(mode="wb") as f_out:
         # Informe the caller about the current state
