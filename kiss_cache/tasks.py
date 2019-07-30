@@ -33,10 +33,10 @@ def fetch(url):
     except OSError as exc:
         LOG.error("Unable to create the directory '%s'", str((base / res.path)))
         LOG.exception(exc)
-        res.state = Resource.STATE_FINISHED
-        res.status_code = 500
-        res.save(update_fields=["state", "status_code"])
-        raise
+        Resource.objects.filter(pk=res.pk).update(
+            state=Resource.STATE_FINISHED, status_code=500
+        )
+        return
 
     # Download the resource
     # * stream back the result
@@ -49,25 +49,27 @@ def fetch(url):
         timeout=settings.DOWNLOAD_TIMEOUT,
     )
 
-    # Save the status code
-    res.status_code = req.status_code
-    if res.status_code != 200:
-        res.state = Resource.STATE_FINISHED
-        res.save(update_fields=["state", "status_code"])
-        LOG.error("'%s' returned %d", url, res.status_code)
+    # Update the status code
+    Resource.objects.filter(pk=res.pk).update(status_code=req.status_code)
+    if req.status_code != 200:
+        Resource.objects.filter(pk=res.pk).update(state=Resource.STATE_FINISHED)
+        LOG.error("'%s' returned %d", url, req.status_code)
+        req.close()
         return
-    res.save(update_fields=["status_code"])
+    res.refresh_from_db()
 
     # Store Content-Length and Content-Type
-    res.content_length = req.headers.get("Content-Length")
-    res.content_type = req.headers.get("Content-Type", "")
-    res.save(update_fields=["content_length", "content_type"])
+    Resource.objects.filter(pk=res.pk).update(
+        content_length=req.headers.get("Content-Length"),
+        content_type=req.headers.get("Content-Type", ""),
+    )
+    res.refresh_from_db()
 
     # TODO: make this idempotent to allow for task restart
     with res.open(mode="wb") as f_out:
         # Informe the caller about the current state
-        res.state = Resource.STATE_DOWNLOADING
-        res.save(update_fields=["state"])
+        Resource.objects.filter(pk=res.pk).update(state=Resource.STATE_DOWNLOADING)
+        res.refresh_from_db()
         # Iterate
         # TODO: except requests.exceptions
         for data in req.iter_content(
@@ -76,8 +78,7 @@ def fetch(url):
             f_out.write(data)
 
     # Mark the task as done
-    res.state = Resource.STATE_FINISHED
-    res.save(update_fields=["state"])
+    Resource.objects.filter(pk=res.pk).update(state=Resource.STATE_FINISHED)
     LOG.info("[done]")
 
 
