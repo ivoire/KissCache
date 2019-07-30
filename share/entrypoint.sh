@@ -77,7 +77,7 @@ then
   echo "done"
   echo ""
 
-  exec python3 -m celery -A website worker --loglevel=info --autoscale=1,10
+  exec python3 -m celery -A website worker --loglevel=info
 elif [ "$SERVICE" = "celery-beat" ]
 then
   exec python3 -m celery -A website beat --loglevel=info --pidfile= -s /var/cache/kiss-cache/celerybeat-schedule
