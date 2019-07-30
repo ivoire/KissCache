@@ -7,7 +7,7 @@ ENV DEBIAN_FRONTEND noninteractive
 # Install dependencies
 RUN apt-get update -q ;\
     apt-get install --no-install-recommends --yes gunicorn3 python3 python3-celery python3-pip python3-psycopg2 python3-redis python3-requests python3-yaml ;\
-    python3 -m pip install --upgrade django whitenoise ;\
+    python3 -m pip install --upgrade "django>=2.2,<=2.3" whitenoise ;\
     # Cleanup
     apt-get clean ;\
     rm -rf /var/lib/apt/lists/*
