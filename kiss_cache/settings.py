@@ -16,6 +16,6 @@ CELERY_WORKER_SEND_TASK_EVENTS = True
 
 # Setup the scheduler
 CELERY_BEAT_SCHEDULE = {
-    "expire-every-hour": {"task": "kiss_cache.tasks.expire", "schedule": 600.0}
+    "expire-every-hour": {"task": "kiss_cache.tasks.expire", "schedule": 60 * 60}
 }
-CELERY_BEAT_MAX_LOOP_INTERVAL = 300
+CELERY_BEAT_MAX_LOOP_INTERVAL = 30 * 60
