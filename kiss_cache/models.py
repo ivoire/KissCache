@@ -10,6 +10,7 @@ from django.conf import settings
 class Resource(models.Model):
     # TODO: max_length=?
     url = models.URLField(unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     ttl = models.IntegerField(default=60 * 60 * 24)
     # TODO: remove null=True
     path = models.CharField(max_length=65, blank=True, null=True)

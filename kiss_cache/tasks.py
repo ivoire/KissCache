@@ -1,3 +1,4 @@
+from datetime import timedelta
 import logging
 import pathlib
 import requests
@@ -5,6 +6,7 @@ import requests
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.conf import settings
+from django.utils import timezone
 
 from kiss_cache.models import Resource
 
@@ -77,3 +79,14 @@ def fetch(url):
     res.state = Resource.STATE_FINISHED
     res.save(update_fields=["state"])
     LOG.info("[done]")
+
+
+@shared_task
+def expire():
+    LOG.info("Expiring resources")
+    now = timezone.now()
+    for res in Resource.objects.all():
+        if res.created_at + timedelta(res.ttl) > now:
+            LOG.info("* '%s'", res.url)
+            res.delete()
+    LOG.info("done")
