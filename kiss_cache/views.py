@@ -17,6 +17,7 @@ from django.views.decorators.http import require_safe
 
 from kiss_cache.models import Resource
 from kiss_cache.tasks import fetch
+from kiss_cache.utils import check_client_ip
 
 
 def index(request):
@@ -64,6 +65,7 @@ def resources(request, page=1, state="successes"):
     )
 
 
+@check_client_ip
 @require_safe
 def api_fetch(request, filename=None):
     # TODO: handle HEAD requests

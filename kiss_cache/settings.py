@@ -19,3 +19,6 @@ CELERY_BEAT_SCHEDULE = {
     "expire-every-hour": {"task": "kiss_cache.tasks.expire", "schedule": 60 * 60}
 }
 CELERY_BEAT_MAX_LOOP_INTERVAL = 30 * 60
+
+# List of networks that can fetch resources
+ALLOWED_NETWORKS = ["0.0.0.0/0", "::/0"]
