@@ -87,7 +87,7 @@ def expire():
     LOG.info("Expiring resources")
     now = timezone.now()
     for res in Resource.objects.all():
-        if res.created_at + timedelta(res.ttl) > now:
+        if res.created_at + timedelta(seconds=res.ttl) > now:
             LOG.info("* '%s'", res.url)
             res.delete()
     LOG.info("done")
