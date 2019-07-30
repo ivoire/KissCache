@@ -9,6 +9,7 @@ from django.conf import settings
 from django.utils import timezone
 
 from kiss_cache.models import Resource
+from kiss_cache.utils import requests_retry
 
 
 # Setup the loggers
@@ -42,12 +43,20 @@ def fetch(url):
     # * stream back the result
     # * only accept plain content (not gziped) so Content-Length is known
     # * with a timeout
-    req = requests.get(
-        res.url,
-        stream=True,
-        headers={"Accept-Encoding": ""},
-        timeout=settings.DOWNLOAD_TIMEOUT,
-    )
+    try:
+        req = requests_retry().get(
+            res.url,
+            stream=True,
+            headers={"Accept-Encoding": ""},
+            timeout=settings.DOWNLOAD_TIMEOUT,
+        )
+    except requests.RequestException as exc:
+        LOG.error("Unable to connect to '%s'", url)
+        LOG.exception(exc)
+        Resource.objects.filter(pk=res.pk).update(
+            state=Resource.STATE_FINISHED, status_code=500
+        )
+        return
 
     # Update the status code
     Resource.objects.filter(pk=res.pk).update(status_code=req.status_code)
