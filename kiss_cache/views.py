@@ -1,3 +1,4 @@
+from datetime import timedelta
 import time
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
@@ -88,12 +89,15 @@ def api_fetch(request, filename=None):
         created = False
 
     # Set the last usage and increase the counter
-    Resource.objects.filter(url=url).update(usage=F("usage") + 1, last_usage=Now())
+    Resource.objects.filter(pk=res.pk).update(usage=F("usage") + 1, last_usage=Now())
 
-    # parse and set the ttl
+    # Set the TTL if the resulting date is earlier
     res.refresh_from_db()
-    res.ttl = ttl
-    res.save(update_fields=["ttl"])
+    if res.created_at + timedelta(seconds=res.ttl) > res.created_at + timedelta(
+        seconds=ttl
+    ):
+        res.ttl = ttl
+        res.save(update_fields=["ttl"])
 
     # If needed, fetch the url
     if created:
