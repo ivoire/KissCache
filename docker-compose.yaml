@@ -10,12 +10,22 @@ services:
     - db:/var/lib/postgresql/data
     restart: unless-stopped
 
-  celery:
-    container_name: kc-celery-workers
+  celery-beat:
+    container_name: kc-celery-beat
     image: ${KC_IMAGE}
     user: kiss-cache
     environment:
-      SERVICE: celery
+      SERVICE: celery-beat
+    depends_on:
+    - redis
+    restart: unless-stopped
+
+  celery-worker:
+    container_name: kc-celery-worker
+    image: ${KC_IMAGE}
+    user: kiss-cache
+    environment:
+      SERVICE: celery-worker
     volumes:
     - cache:/var/cache/kiss-cache/
     - ./share/kiss-cache.yaml:/etc/kiss-cache.yaml

@@ -66,21 +66,27 @@ wait_migration() {
 }
 
 
-echo "Waiting for postgresql"
-wait_postgresql
-echo "done"
-echo ""
-
-if [ "$SERVICE" = "celery" ]
+if [ "$SERVICE" = "celery-worker" ]
 then
+  echo "Waiting for postgresql"
+  wait_postgresql
+  echo "done"
+  echo ""
   echo "Waiting for migrations"
   wait_migration
   echo "done"
   echo ""
 
   exec python3 -m celery -A website worker --loglevel=info --autoscale=1,10
+elif [ "$SERVICE" = "celery-beat" ]
+then
+  exec python3 -m celery -A website beat --loglevel=info --pidfile= -s /var/cache/kiss-cache/celerybeat-schedule
 elif [ "$SERVICE" = "gunicorn" ]
 then
+  echo "Waiting for postgresql"
+  wait_postgresql
+  echo "done"
+  echo ""
   echo "Applying migrations"
   python3 manage.py migrate --noinput
   echo "done"
