@@ -75,6 +75,7 @@ def fetch(url):
     res.refresh_from_db()
 
     # TODO: make this idempotent to allow for task restart
+    size = 0
     with res.open(mode="wb") as f_out:
         # Informe the caller about the current state
         Resource.objects.filter(pk=res.pk).update(state=Resource.STATE_DOWNLOADING)
@@ -84,7 +85,19 @@ def fetch(url):
         for data in req.iter_content(
             chunk_size=settings.DOWNLOAD_CHUNK_SIZE, decode_unicode=False
         ):
-            f_out.write(data)
+            size += f_out.write(data)
+
+    # Check or save the size
+    if res.content_length:
+        if res.content_length != size:
+            LOG.error(
+                "The total size (%d) is not equal to the Content-Length (%d)",
+                size,
+                res.content_length,
+            )
+            # TODO: do something
+    else:
+        Resource.objects.filter(pk=res.pk).update(content_length=size)
 
     # Mark the task as done
     Resource.objects.filter(pk=res.pk).update(state=Resource.STATE_FINISHED)
