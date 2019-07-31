@@ -5,7 +5,7 @@ from kiss_cache import views
 
 urlpatterns = [
     path("", views.index, name="home"),
-    path("statistics/", views.statistics, name="statistics"),
+    path("help/", views.help, name="help"),
     path(
         "resources/scheduled/",
         views.resources,
@@ -36,6 +36,7 @@ urlpatterns = [
         {"state": "failures"},
         name="resources.failures",
     ),
+    path("statistics/", views.statistics, name="statistics"),
     path("api/v1/fetch/", views.api_fetch, name="api.fetch"),
     path("api/v1/fetch/<str:filename>", views.api_fetch, name="api.fetch"),
 ]

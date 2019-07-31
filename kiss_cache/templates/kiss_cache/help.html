@@ -1,0 +1,41 @@
+{% extends 'kiss_cache/base.html' %}
+
+{% block title %} - Help{% endblock %}
+
+{% block nav_help %}active{% endblock %}
+
+{% block style %}
+    h3, h4 {
+      margin-top: 20px;
+    }
+    code {
+      background-color: #f9f2f4;
+      padding: 2px 4px;
+    }
+{% endblock style %}
+
+{% block body %}
+<div class="row">
+  <div class="col">
+    <h2>Using KissCache</h2>
+    <h4>URL prefix</h4>
+    <p>In order to cache <code>https://example.com/kernel</code>, you should prefix the URL by the KissCache api url:</p>
+    <code>curl {{ api_url }}kernel?url=https://example.com/kernel</code>
+
+    <h4>URL encoding</h4>
+    <p>Depending on the source URL, the URL should be urlencoded.</p>
+
+    <h2>Restrictions</h2>
+    {% if ALLOWED_NETWORKS %}
+    <p>This instance is restricted to the following networks:</p>
+    <ul>
+    {% for net in ALLOWED_NETWORKS %}
+      <li>{{ net }}</li>
+    {% endfor %}
+    </ul>
+    {% else %}
+    <p>This instance is open to every users.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock body %}

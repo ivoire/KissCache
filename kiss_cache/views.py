@@ -14,6 +14,7 @@ from django.http import (
     StreamingHttpResponse,
 )
 from django.shortcuts import render
+from django.urls import reverse
 from django.views.decorators.http import require_safe
 
 from kiss_cache.models import Resource
@@ -23,6 +24,17 @@ from kiss_cache.utils import check_client_ip
 
 def index(request):
     return render(request, "kiss_cache/index.html", {})
+
+
+def help(request):
+    return render(
+        request,
+        "kiss_cache/help.html",
+        {
+            "ALLOWED_NETWORKS": settings.ALLOWED_NETWORKS,
+            "api_url": request.build_absolute_uri(reverse("api.fetch")),
+        },
+    )
 
 
 def statistics(request):
