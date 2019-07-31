@@ -8,17 +8,24 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
 
+def is_client_allowed(request):
+    # If ALLOWED_NETWORKS is empty: accept every clients
+    if not settings.ALLOWED_NETWORKS:
+        return True
+    # Filter the clients
+    client_ip = ipaddress.ip_address(request.META["HTTP_X_FORWARDED_FOR"])
+    for rule in settings.ALLOWED_NETWORKS:
+        if client_ip in ipaddress.ip_network(rule):
+            return True
+    # Nothing matching: access is denied
+    return False
+
+
 def check_client_ip(func):
     @wraps(func)
     def inner(request, *args, **kwargs):
-        # If ALLOWED_NETWORKS is empty: accept every clients
-        if not settings.ALLOWED_NETWORKS:
+        if is_client_allowed(request):
             return func(request, *args, **kwargs)
-        # Filter the clients
-        client_ip = ipaddress.ip_address(request.META["HTTP_X_FORWARDED_FOR"])
-        for rule in settings.ALLOWED_NETWORKS:
-            if client_ip in ipaddress.ip_network(rule):
-                return func(request, *args, **kwargs)
         # Nothing matching: access is denied
         return HttpResponseForbidden()
 
