@@ -4,8 +4,10 @@ DOWNLOAD_TIMEOUT = 10 * 60
 # base directory
 DOWNLOAD_PATH = "/var/cache/kiss-cache"
 
+# Download 1kB by 1kB
 DOWNLOAD_CHUNK_SIZE = 1024
 
+# By default, keep the resources for 1 day
 DEFAULT_TTL = "1d"
 
 # Celery specific configuration
@@ -21,7 +23,8 @@ CELERY_BEAT_SCHEDULE = {
 CELERY_BEAT_MAX_LOOP_INTERVAL = 30 * 60
 
 # List of networks that can fetch resources
-ALLOWED_NETWORKS = ["0.0.0.0/0", "::/0"]
+# By default the instance is fully open
+ALLOWED_NETWORKS = []
 
 # Quota
 RESOURCE_QUOTA = 200 * 1024 * 1024
