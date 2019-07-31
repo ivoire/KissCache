@@ -39,6 +39,19 @@
   </div>
 </div>
 
+<div class="row justify-content-center">
+  <div class="col-8">
+    <div class="input-group mb-3">
+      <input type="text" class="form-control" placeholder="resource url" aria-label="resource url" aria-describedby="cache-button" id="cache">
+      <div class="input-group-append">
+        <button class="btn btn-outline-secondary" type="button" id="cache-button" onclick="generate()">generate</button>
+        <button class="btn btn-outline-success" type="button" id="fetch-button" onclick="fetch()">fetch</button>
+        <button class="btn btn-outline-success" type="button" id="download-button" onclick="download()" style="display: none;">download</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="row">
   <div class="col">
     <h2>Resources</h2>
@@ -61,3 +74,26 @@
 
 </div>
 {% endblock body %}
+
+{% block scripts %}
+<script>
+function generate() {
+  var uri = document.getElementById("cache").value;
+  var res = "{{ api_url }}?url=" + encodeURIComponent(uri);
+  document.getElementById("cache").value = res;
+  document.getElementById("fetch-button").style.display = "none";
+  document.getElementById("download-button").style.display = "block";
+}
+
+function fetch() {
+  var uri = document.getElementById("cache").value;
+  var res = "{{ api_url }}?url=" + encodeURIComponent(uri);
+  window.location = res;
+}
+
+function download() {
+  var uri = document.getElementById("cache").value;
+  window.location = uri;
+}
+</script>
+{% endblock %}

@@ -23,7 +23,11 @@ from kiss_cache.utils import check_client_ip
 
 
 def index(request):
-    return render(request, "kiss_cache/index.html", {})
+    return render(
+        request,
+        "kiss_cache/index.html",
+        {"api_url": request.build_absolute_uri(reverse("api.fetch"))},
+    )
 
 
 def help(request):
