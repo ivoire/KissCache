@@ -13,6 +13,8 @@ def is_client_allowed(request):
     if not settings.ALLOWED_NETWORKS:
         return True
     # Filter the clients
+    if "HTTP_X_FORWARDED_FOR" not in request.META:
+        raise Exception("Missing X-Forwarded-For header")
     client_ip = ipaddress.ip_address(request.META["HTTP_X_FORWARDED_FOR"])
     for rule in settings.ALLOWED_NETWORKS:
         if client_ip in ipaddress.ip_network(rule):
