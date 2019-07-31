@@ -1,3 +1,4 @@
+import contextlib
 from datetime import timedelta
 import time
 
@@ -47,7 +48,9 @@ def statistics(request):
     # Compute the quota and current size
     size = Resource.objects.aggregate(size=Sum("content_length"))["size"]
     quota = settings.RESOURCE_QUOTA
-    progress = int(size / quota * 100)
+    progress = 0
+    with contextlib.suppress(Exception):
+        progress = int(size / quota * 100)
     if progress >= 85:
         progress_status = "danger"
     elif progress >= 60:
