@@ -22,3 +22,6 @@ CELERY_BEAT_MAX_LOOP_INTERVAL = 30 * 60
 
 # List of networks that can fetch resources
 ALLOWED_NETWORKS = ["0.0.0.0/0", "::/0"]
+
+# Quota
+RESOURCE_QUOTA = 200 * 1024 * 1024
