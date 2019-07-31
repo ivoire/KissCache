@@ -55,15 +55,12 @@ class Resource(models.Model):
         return str(pathlib.Path(data[0:2]) / data[2:])
 
     def progress(self):
-        size = self.size()
+        size = 0
+        with contextlib.suppress(Exception):
+            size = (pathlib.Path(settings.DOWNLOAD_PATH) / self.path).stat().st_size
         max_size = self.content_length
         with contextlib.suppress(Exception):
             return int(size / max_size * 100)
-        return "??"
-
-    def size(self):
-        with contextlib.suppress(Exception):
-            return (pathlib.Path(settings.DOWNLOAD_PATH) / self.path).stat().st_size
         return "??"
 
     def open(self, mode):

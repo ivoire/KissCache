@@ -90,9 +90,7 @@
               <td title="{{ res.last_usage|date:"c" }}">{{ res.last_usage|timesince }}</td>
               <td>{{ res.usage }}</td>
               <td>{{ res.ttl }}</td>
-              {% with res.size as size %}
-              <td title="{{ size }}">{{ size|filesizeformat }}</td>
-              {% endwith %}
+              <td title="{{ res.content_length }}">{{ res.content_length|filesizeformat }}</td>
             </tr>
           {% empty %}
           <tr><td colspan="5"><i>...</i></td></tr>
