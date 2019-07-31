@@ -1,0 +1,45 @@
+{% extends 'kiss_cache/base.html' %}
+
+{% block title %} - Statistics{% endblock %}
+
+{% block nav_statistics %}active{% endblock %}
+
+{% block body %}
+<div class="row">
+  <div class="col">
+    <h2>Quota</h2>
+    <div class="progress">
+      <div class="progress-bar progress-bar-striped bg-{{ progress_status }}" role="progressbar" style="width: {{ progress }}%" aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100">{{ progress }}%</div>
+    </div>
+    <p>Using {{ total_size|filesizeformat }} of {{ quota|filesizeformat }}.</p>
+
+    <h2>Resources</h2>
+    <table class="table table-striped">
+      <thead class="thead-light">
+        <tr>
+          <th>State</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Scheduled</td>
+          <td><span class="badge badge-pill badge-secondary">{{ scheduled_count }}</span></td>
+        </tr>
+        <tr>
+          <td>Downloading</td>
+          <td><span class="badge badge-pill badge-info">{{ downloading_count }}</span></td>
+        </tr>
+        <tr>
+          <td>Successes</td>
+          <td><span class="badge badge-pill badge-success">{{ successes_count }}</span></td>
+        </tr>
+        <tr>
+          <td>Failures</td>
+          <td><span class="badge badge-pill badge-danger">{{ failures_count }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock body %}

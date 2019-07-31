@@ -1,6 +1,7 @@
 from datetime import timedelta
 import time
 
+from django.db.models.aggregates import Sum
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db import IntegrityError
 from django.db.models import F
@@ -22,6 +23,42 @@ from kiss_cache.utils import check_client_ip
 
 def index(request):
     return render(request, "kiss_cache/index.html", {})
+
+
+def statistics(request):
+    # Compute the quota and current size
+    size = Resource.objects.aggregate(size=Sum("content_length"))["size"]
+    quota = settings.RESOURCE_QUOTA
+    progress = int(size / quota * 100)
+    if progress >= 85:
+        progress_status = "danger"
+    elif progress >= 60:
+        progress_status = "warning"
+    else:
+        progress_status = "success"
+
+    # Count the resources
+    query = Resource.objects.order_by("url")
+    scheduled = query.filter(state=Resource.STATE_SCHEDULED).count()
+    downloading = query.filter(state=Resource.STATE_DOWNLOADING).count()
+    successes = query.filter(state=Resource.STATE_FINISHED, status_code=200).count()
+    failures = (
+        query.filter(state=Resource.STATE_FINISHED).exclude(status_code=200).count()
+    )
+    return render(
+        request,
+        "kiss_cache/statistics.html",
+        {
+            "total_size": size,
+            "quota": quota,
+            "progress": progress,
+            "progress_status": progress_status,
+            "scheduled_count": scheduled,
+            "downloading_count": downloading,
+            "successes_count": successes,
+            "failures_count": failures,
+        },
+    )
 
 
 def resources(request, page=1, state="successes"):
