@@ -147,7 +147,6 @@ def resources(request, page=1, state="successes"):
 @check_client_ip
 @require_safe
 def api_fetch(request, filename=None):
-    # TODO: handle HEAD requests
     url = request.GET.get("url")
     ttl = request.GET.get("ttl")
 
@@ -173,22 +172,22 @@ def api_fetch(request, filename=None):
     Resource.objects.filter(pk=res.pk).update(usage=F("usage") + 1, last_usage=Now())
 
     # Set the TTL if the resulting date is earlier
-    res.refresh_from_db()
     if res.created_at + timedelta(seconds=res.ttl) > res.created_at + timedelta(
         seconds=ttl
     ):
         res.ttl = ttl
-        res.save(update_fields=["ttl"])
+        Resource.objects.filter(pk=res.pk).update(ttl=ttl)
 
     # If needed, fetch the url
     if created:
         # Set the path
         res.path = Resource.compute_path(res.url)
-        res.save(update_fields=["path"])
+        Resource.objects.filter(pk=res.pk).update(path=res.path)
 
         # Schedule the fetch task
         fetch.delay(res.url)
 
+    res.refresh_from_db()
     if res.state == Resource.STATE_SCHEDULED:
         # Wait for the task to start
         # TODO: add timeout
