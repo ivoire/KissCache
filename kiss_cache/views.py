@@ -35,6 +35,7 @@ from django.http import (
 )
 from django.shortcuts import render
 from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.http import require_safe
 
 from kiss_cache.models import Resource, Statistic
@@ -172,9 +173,11 @@ def api_fetch(request, filename=None):
     Resource.objects.filter(pk=res.pk).update(usage=F("usage") + 1, last_usage=Now())
 
     # Set the TTL if the resulting date is earlier
-    if res.created_at + timedelta(seconds=res.ttl) > res.created_at + timedelta(
-        seconds=ttl
-    ):
+    now = timezone.now()
+    current_end = res.created_at + timedelta(seconds=res.ttl)
+    new_end = now + timedelta(seconds=ttl)
+    if current_end > new_end:
+        ttl = (now - res.created_at).total_seconds() + ttl
         res.ttl = ttl
         Resource.objects.filter(pk=res.pk).update(ttl=ttl)
 
