@@ -183,6 +183,15 @@ def api_fetch(request, filename=None):
 
     # If needed, fetch the url
     if created:
+        # We don't know yet the size of the resource, so just check that the
+        # quota is not already consumed
+        total_size = Resource.objects.aggregate(size=Sum("content_length"))["size"]
+        if total_size > settings.RESOURCE_QUOTA:
+            Resource.objects.filter(pk=res.pk).update(
+                state=Resource.STATE_FINISHED, status_code=507
+            )
+            return HttpResponse(status=507)
+
         # Set the path
         res.path = Resource.compute_path(res.url)
         Resource.objects.filter(pk=res.pk).update(path=res.path)
