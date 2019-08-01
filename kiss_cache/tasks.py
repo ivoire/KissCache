@@ -5,10 +5,12 @@ import requests
 
 from celery import shared_task
 from celery.utils.log import get_task_logger
+
+from django.db.models import F
 from django.conf import settings
 from django.utils import timezone
 
-from kiss_cache.models import Resource
+from kiss_cache.models import Resource, Statistic
 from kiss_cache.utils import requests_retry
 
 
@@ -98,6 +100,11 @@ def fetch(url):
             # TODO: do something
     else:
         Resource.objects.filter(pk=res.pk).update(content_length=size)
+
+    # Update the statistics
+    Statistic.objects.filter(stat=Statistic.STAT_DOWNLOAD).update(
+        value=F("value") + size
+    )
 
     # Mark the task as done
     Resource.objects.filter(pk=res.pk).update(state=Resource.STATE_FINISHED)

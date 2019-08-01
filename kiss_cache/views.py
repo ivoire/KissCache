@@ -18,7 +18,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.http import require_safe
 
-from kiss_cache.models import Resource
+from kiss_cache.models import Resource, Statistic
 from kiss_cache.tasks import fetch
 from kiss_cache.utils import check_client_ip, is_client_allowed
 
@@ -78,6 +78,8 @@ def statistics(request):
             "downloading_count": downloading,
             "successes_count": successes,
             "failures_count": failures,
+            "download": Statistic.objects.get(stat=Statistic.STAT_DOWNLOAD).value,
+            "upload": Statistic.objects.get(stat=Statistic.STAT_UPLOAD).value,
         },
     )
 
@@ -176,6 +178,12 @@ def api_fetch(request, filename=None):
             if res.state != Resource.STATE_SCHEDULED:
                 break
             time.sleep(1)
+
+    # Update the statistics
+    if res.content_length:
+        Statistic.objects.filter(stat=Statistic.STAT_UPLOAD).update(
+            value=F("value") + res.content_length
+        )
 
     # The task has been started.
     if res.state == Resource.STATE_DOWNLOADING:

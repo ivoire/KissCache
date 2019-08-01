@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from kiss_cache.models import Resource
+from kiss_cache.models import Resource, Statistic
 
 
 class ResourceAdmin(admin.ModelAdmin):
@@ -14,4 +14,10 @@ class ResourceAdmin(admin.ModelAdmin):
         return self.readonly_fields
 
 
+class StatisticAdmin(admin.ModelAdmin):
+    list_display = ("get_stat_display", "value")
+    ordering = ["stat"]
+
+
 admin.site.register(Resource, ResourceAdmin)
+admin.site.register(Statistic, StatisticAdmin)

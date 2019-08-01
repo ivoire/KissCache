@@ -13,6 +13,8 @@
     </div>
     <p>Using {{ total_size|filesizeformat }} of {{ quota|filesizeformat }}.</p>
 
+    <h2>Network usage</h2>
+    <p>KissCache has downloaded <span class="badge badge-pill badge-info" title="{{ download }}">{{ download|filesizeformat }}</span> and uploaded <span class="badge badge-pill badge-success" title="{{ upload }}">{{ upload|filesizeformat }}</span></p>
     <h2>Resources</h2>
     <table class="table table-striped">
       <thead class="thead-light">
