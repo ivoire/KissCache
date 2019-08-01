@@ -31,5 +31,5 @@ from kiss_cache.models import Resource
 def resource_post_delete(sender, **kwargs):
     resource = kwargs["instance"]
     base = pathlib.Path(settings.DOWNLOAD_PATH)
-    with contextlib.suppress(OSError):
+    with contextlib.suppress(Exception):
         (base / resource.path).unlink()
