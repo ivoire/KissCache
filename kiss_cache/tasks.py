@@ -40,6 +40,8 @@ LOG = get_task_logger(__name__)
 
 @shared_task
 def fetch(url):
+    # TODO: should the resource be removed from the db if an exception is
+    # raised (instead of setting a 50x status_code?)
     LOG.info("Fetching '%s'", url)
     # Grab the object from the database
     try:
@@ -75,7 +77,7 @@ def fetch(url):
         LOG.error("Unable to connect to '%s'", url)
         LOG.exception(exc)
         Resource.objects.filter(pk=res.pk).update(
-            state=Resource.STATE_FINISHED, status_code=500
+            state=Resource.STATE_FINISHED, status_code=502
         )
         return
 
@@ -102,11 +104,19 @@ def fetch(url):
         Resource.objects.filter(pk=res.pk).update(state=Resource.STATE_DOWNLOADING)
         res.refresh_from_db()
         # Iterate
-        # TODO: except requests.exceptions
-        for data in req.iter_content(
-            chunk_size=settings.DOWNLOAD_CHUNK_SIZE, decode_unicode=False
-        ):
-            size += f_out.write(data)
+        try:
+            for data in req.iter_content(
+                chunk_size=settings.DOWNLOAD_CHUNK_SIZE, decode_unicode=False
+            ):
+                size += f_out.write(data)
+        except requests.RequestException as exc:
+            LOG.error("Unable to fetch '%s'", url)
+            LOG.exception(exc)
+            Resource.objects.filter(pk=res.pk).update(
+                state=Resource.STATE_FINISHED, status_code=504
+            )
+            req.close()
+            return
 
     # Check or save the size
     if res.content_length:
