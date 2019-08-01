@@ -9,8 +9,6 @@ then
 else
   set -x
 
-  # Pull the last image to use as cache
-  docker pull $CI_REGISTRY_IMAGE:latest
   # Build the docker image
   docker build -t $CI_REGISTRY_IMAGE:latest .
 
