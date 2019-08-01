@@ -25,19 +25,19 @@
       </thead>
       <tbody>
         <tr>
-          <td>Scheduled</td>
+          <td><a href="{% url 'resources.scheduled' %}">Scheduled</a></td>
           <td><span class="badge badge-pill badge-secondary">{{ scheduled_count }}</span></td>
         </tr>
         <tr>
-          <td>Downloading</td>
+          <td><a href="{% url 'resources.downloading' %}">Downloading</a></td>
           <td><span class="badge badge-pill badge-info">{{ downloading_count }}</span></td>
         </tr>
         <tr>
-          <td>Successes</td>
+          <td><a href="{% url 'resources' %}">Successes</a></td>
           <td><span class="badge badge-pill badge-success">{{ successes_count }}</span></td>
         </tr>
         <tr>
-          <td>Failures</td>
+          <td><a href="{% url 'resources.failures' %}">Failures</a></td>
           <td><span class="badge badge-pill badge-danger">{{ failures_count }}</span></td>
         </tr>
       </tbody>
