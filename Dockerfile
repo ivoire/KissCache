@@ -12,10 +12,8 @@ RUN apt-get update -q ;\
     apt-get clean ;\
     rm -rf /var/lib/apt/lists/*
 
-# Add sources
-WORKDIR /app/
-COPY kiss_cache/ /app/kiss_cache/
 # Create the django project
+WORKDIR /app/
 RUN addgroup --system --gid 200 kiss-cache && \
     adduser --system --uid 200 --gid 200 kiss-cache ;\
     mkdir /var/cache/kiss-cache/ ;\
@@ -23,17 +21,22 @@ RUN addgroup --system --gid 200 kiss-cache && \
     chmod 775 /app ;\
     django-admin startproject website /app
 
+# Add entrypoint
+COPY share/entrypoint.sh /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+
+# Add sources
+COPY kiss_cache/ /app/kiss_cache/
 COPY share/init.py /app/website/__init__.py
 COPY share/celery.py /app/website/celery.py
 COPY share/settings.py /app/website/custom_settings.py
 COPY share/urls.py /app/website/urls.py
 
 # Setup kiss_cache application
+ARG VERSION="dev"
 RUN echo "INSTALLED_APPS.append(\"kiss_cache\")" >> /app/website/settings.py ;\
     echo "from kiss_cache.settings import *" >> /app/website/settings.py ;\
     echo "from website.custom_settings import *" >> /app/website/settings.py ;\
+    echo "__version__ = \"$VERSION\"" >> /app/kiss_cache/__about__.py ;\
     # Migrate and collect static files
     python3 manage.py collectstatic --noinput
-
-COPY share/entrypoint.sh /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]
