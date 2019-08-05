@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: set ts=4
 
-# Copyright 2018 Rémi Duraffort
+# Copyright 2019 Rémi Duraffort
 # This file is part of KissCache.
 #
 # KissCache is free software: you can redistribute it and/or modify
@@ -38,6 +38,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_safe
 
+from kiss_cache.__about__ import __version__
 from kiss_cache.models import Resource, Statistic
 from kiss_cache.tasks import fetch
 from kiss_cache.utils import check_client_ip, is_client_allowed
@@ -47,7 +48,10 @@ def index(request):
     return render(
         request,
         "kiss_cache/index.html",
-        {"api_url": request.build_absolute_uri(reverse("api.fetch"))},
+        {
+            "api_url": request.build_absolute_uri(reverse("api.fetch")),
+            "version": __version__,
+        },
     )
 
 
