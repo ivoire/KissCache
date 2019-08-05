@@ -41,6 +41,7 @@ services:
 
   web:
     container_name: kc-web
+    build: .
     image: ${KC_IMAGE}
     volumes:
     - cache:/var/cache/kiss-cache/
