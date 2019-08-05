@@ -26,8 +26,8 @@ DOWNLOAD_PATH = "/var/cache/kiss-cache"
 # Download 1kB by 1kB
 DOWNLOAD_CHUNK_SIZE = 1024
 
-# By default, keep the resources for 1 day
-DEFAULT_TTL = "1d"
+# By default, keep the resources for 10 days
+DEFAULT_TTL = "10d"
 
 # Celery specific configuration
 CELERY_TASK_ACKS_LATE = True
@@ -45,5 +45,5 @@ CELERY_BEAT_MAX_LOOP_INTERVAL = 30 * 60
 # By default the instance is fully open
 ALLOWED_NETWORKS = []
 
-# Quota
-RESOURCE_QUOTA = 200 * 1024 * 1024
+# Default quota of 2G
+RESOURCE_QUOTA = 2 * 1024 * 1024 * 1024
