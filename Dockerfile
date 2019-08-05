@@ -16,7 +16,8 @@ RUN apt-get update -q ;\
 WORKDIR /app/
 COPY kiss_cache/ /app/kiss_cache/
 # Create the django project
-RUN useradd kiss-cache ;\
+RUN addgroup --system --gid 200 kiss-cache && \
+    adduser --system --uid 200 --gid 200 kiss-cache ;\
     mkdir /var/cache/kiss-cache/ ;\
     chown -R kiss-cache /var/cache/kiss-cache/ ;\
     chmod 775 /app ;\
