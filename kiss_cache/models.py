@@ -121,4 +121,4 @@ class Statistic(models.Model):
     STAT_DOWNLOAD, STAT_UPLOAD = range(2)
     STAT_CHOICES = ((STAT_DOWNLOAD, "Download"), (STAT_UPLOAD, "Upload"))
     stat = models.IntegerField(choices=STAT_CHOICES, primary_key=True)
-    value = models.IntegerField(default=0)
+    value = models.BigIntegerField(default=0)
