@@ -95,5 +95,18 @@ function download() {
   var uri = document.getElementById("cache").value;
   window.location = uri;
 }
+
+var input = document.getElementById("cache");
+input.addEventListener("keyup", function(event) {
+  if (event.keyCode === 13) {
+   event.preventDefault();
+   console.log(document.getElementById("fetch-button").style.display);
+   if (document.getElementById("download-button").style.display == "none") {
+     document.getElementById("fetch-button").click();
+   } else {
+     document.getElementById("download-button").click();
+   }
+  }
+});
 </script>
 {% endblock %}
