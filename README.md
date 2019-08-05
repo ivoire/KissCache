@@ -12,12 +12,13 @@ KissCache is able to:
 * stream back the content to the clients
 * automatically remove old resources
 * restrict the api to specific sub-networks
+* record usage statistics
+* set and enforce a quota
 
 In a near future, KissCache will be able to:
 
-* set and enforce a quota
-* record usage statistics
 * support transparent caching
+* automatically re-fetch selected resources
 * ...
 
 
