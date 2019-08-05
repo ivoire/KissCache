@@ -151,13 +151,11 @@ def resources(request, page=1, state="successes"):
 @require_safe
 def api_fetch(request, filename=None):
     url = request.GET.get("url")
-    ttl = request.GET.get("ttl")
+    ttl = request.GET.get("ttl", settings.DEFAULT_TTL)
 
     # Check parameters
     if url is None:
         return HttpResponseBadRequest("'url' should be specified")
-    if ttl is None:
-        ttl = settings.DEFAULT_TTL
     # Parse the TTL
     try:
         ttl = Resource.parse_ttl(ttl)
@@ -173,15 +171,6 @@ def api_fetch(request, filename=None):
 
     # Set the last usage and increase the counter
     Resource.objects.filter(pk=res.pk).update(usage=F("usage") + 1, last_usage=Now())
-
-    # Set the TTL if the resulting date is earlier
-    now = timezone.now()
-    current_end = res.created_at + timedelta(seconds=res.ttl)
-    new_end = now + timedelta(seconds=ttl)
-    if current_end > new_end:
-        ttl = (now - res.created_at).total_seconds() + ttl
-        res.ttl = ttl
-        Resource.objects.filter(pk=res.pk).update(ttl=ttl)
 
     # If needed, fetch the url
     if created:
@@ -203,6 +192,15 @@ def api_fetch(request, filename=None):
 
         # Schedule the fetch task
         fetch.delay(res.url)
+    else:
+        # Set the TTL if the resulting date is earlier
+        now = timezone.now()
+        current_end = res.created_at + timedelta(seconds=res.ttl)
+        new_end = now + timedelta(seconds=ttl)
+        if current_end > new_end:
+            ttl = (now - res.created_at).total_seconds() + ttl
+            res.ttl = ttl
+            Resource.objects.filter(pk=res.pk).update(ttl=ttl)
 
     res.refresh_from_db()
     if res.state == Resource.STATE_SCHEDULED:
