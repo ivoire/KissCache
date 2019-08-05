@@ -67,6 +67,8 @@ def help(request):
 def statistics(request):
     # Compute the quota and current size
     size = Resource.objects.aggregate(size=Sum("content_length"))["size"]
+    if size is None:
+        size = 0
     quota = settings.RESOURCE_QUOTA
     progress = 0
     with contextlib.suppress(Exception):
@@ -186,6 +188,9 @@ def api_fetch(request, filename=None):
         # We don't know yet the size of the resource, so just check that the
         # quota is not already consumed
         total_size = Resource.objects.aggregate(size=Sum("content_length"))["size"]
+        if total_size is None:
+            total_size = 0
+
         if total_size > settings.RESOURCE_QUOTA:
             Resource.objects.filter(pk=res.pk).update(
                 state=Resource.STATE_FINISHED, status_code=507
