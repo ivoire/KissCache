@@ -33,7 +33,7 @@ def git_describe():
     try:
         # git describe?
         out = subprocess.check_output(["git", "describe"], stderr=subprocess.STDOUT)
-        version = out.decode("utf-8").rstrip("\n")[1:]
+        version = out.decode("utf-8").rstrip("\n")
         return version
     except Exception:
         return "git"
