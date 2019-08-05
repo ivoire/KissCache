@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: set ts=4
 
-# Copyright 2018 Rémi Duraffort
+# Copyright 2019 Rémi Duraffort
 # This file is part of KissCache.
 #
 # KissCache is free software: you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 DOWNLOAD_TIMEOUT = 10 * 60
 
 # base directory
-DOWNLOAD_PATH = "/var/cache/kiss-cache"
+DOWNLOAD_PATH = "/tmp/var/cache/kiss-cache"
 
 # Download 1kB by 1kB
 DOWNLOAD_CHUNK_SIZE = 1024

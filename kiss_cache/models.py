@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: set ts=4
 
-# Copyright 2018 Rémi Duraffort
+# Copyright 2019 Rémi Duraffort
 # This file is part of KissCache.
 #
 # KissCache is free software: you can redistribute it and/or modify
