@@ -21,7 +21,7 @@
 DOWNLOAD_TIMEOUT = 10 * 60
 
 # base directory
-DOWNLOAD_PATH = "/tmp/var/cache/kiss-cache"
+DOWNLOAD_PATH = "/var/cache/kiss-cache"
 
 # Download 1kB by 1kB
 DOWNLOAD_CHUNK_SIZE = 1024
