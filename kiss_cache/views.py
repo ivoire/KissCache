@@ -186,9 +186,9 @@ def api_fetch(request, filename=None):
             )
             return HttpResponse(status=507)
 
-        # Set the path
+        # Set the ttl and the path
         res.path = Resource.compute_path(res.url)
-        Resource.objects.filter(pk=res.pk).update(path=res.path)
+        Resource.objects.filter(pk=res.pk).update(path=res.path, ttl=ttl)
 
         # Schedule the fetch task
         fetch.delay(res.url)
