@@ -38,7 +38,7 @@ logging.getLogger("requests").setLevel(logging.WARNING)
 LOG = get_task_logger(__name__)
 
 
-@shared_task
+@shared_task(ignore_result=True)
 def fetch(url):
     # TODO: should the resource be removed from the db if an exception is
     # raised (instead of setting a 50x status_code?)
@@ -140,7 +140,7 @@ def fetch(url):
     LOG.info("[done]")
 
 
-@shared_task
+@shared_task(ignore_result=True)
 def expire():
     LOG.info("Expiring resources")
     now = timezone.now()
