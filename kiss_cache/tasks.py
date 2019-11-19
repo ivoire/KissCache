@@ -19,8 +19,10 @@
 
 from datetime import timedelta
 import logging
+import math
 import pathlib
 import requests
+import time
 
 from celery import shared_task
 from celery.utils.log import get_task_logger
@@ -103,12 +105,39 @@ def fetch(url):
         # Informe the caller about the current state
         Resource.objects.filter(pk=res.pk).update(state=Resource.STATE_DOWNLOADING)
         res.refresh_from_db()
-        # Iterate
         try:
-            for data in req.iter_content(
+            # variables to log progress
+            last_logged_value = 0
+            start = time.time()
+
+            # Loop on the data
+            iterator = req.iter_content(
                 chunk_size=settings.DOWNLOAD_CHUNK_SIZE, decode_unicode=False
-            ):
+            )
+            for data in iterator:
                 size += f_out.write(data)
+
+                if res.content_length:
+                    percent = math.floor(size / float(res.content_length) * 100)
+                    if percent >= last_logged_value + 5:
+                        last_logged_value = percent
+                        LOG.info(
+                            "progress %3d%% (%dMB)", percent, int(size / (1024 * 1024))
+                        )
+                else:
+                    if size >= last_logged_value + 25 * 1024 * 1024:
+                        last_logged_value = size
+                        LOG.info("progress %dMB", int(size / (1024 * 1024)))
+
+            # Log the speed
+            end = time.time()
+            LOG.info(
+                "%dMB downloaded in %0.2fs (%0.2fMB/s)",
+                size / (1024 * 1024),
+                round(end - start, 2),
+                round(size / (1024 * 1024 * (end - start)), 2),
+            )
+
         except requests.RequestException as exc:
             LOG.error("Unable to fetch '%s'", url)
             LOG.exception(exc)
@@ -137,7 +166,6 @@ def fetch(url):
 
     # Mark the task as done
     Resource.objects.filter(pk=res.pk).update(state=Resource.STATE_FINISHED)
-    LOG.info("[done]")
 
 
 @shared_task(ignore_result=True)
