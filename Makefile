@@ -1,6 +1,6 @@
 all:
 	docker-compose build
-	docker-compose up
+	docker-compose up --scale web=2
 
 clean:
 	docker-compose rm -vsf
