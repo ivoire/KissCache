@@ -29,6 +29,10 @@ DOWNLOAD_CHUNK_SIZE = 1024
 # By default, keep the resources for 10 days
 DEFAULT_TTL = "10d"
 
+# When this file exists, a call to /api/v1/health/ will return 503
+# Allow to implement graceful shutdown and interact with load balancers
+SHUTDOWN_PATH = "/var/lib/kiss-cache/shutdown"
+
 # Celery specific configuration
 CELERY_TASK_ACKS_LATE = True
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1

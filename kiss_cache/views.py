@@ -19,6 +19,7 @@
 
 import contextlib
 from datetime import timedelta
+import pathlib
 import time
 
 from django.db.models.aggregates import Sum
@@ -149,6 +150,17 @@ def resources(request, page=1, state="successes"):
             "failures_count": failures,
         },
     )
+
+
+class HttpResponseServieUnavailable(HttpResponse):
+    status_code = 503
+
+
+@require_safe
+def api_health(request):
+    if pathlib.Path(settings.SHUTDOWN_PATH).exists():
+        return HttpResponseServieUnavailable("Graceful shutdown")
+    return HttpResponse("ok")
 
 
 @check_client_ip

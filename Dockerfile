@@ -17,7 +17,9 @@ WORKDIR /app/
 RUN addgroup --system --gid 200 kiss-cache && \
     adduser --system --uid 200 --gid 200 kiss-cache && \
     mkdir /var/cache/kiss-cache/ && \
+    mkdir /var/lib/kiss-cache/ && \
     chown -R kiss-cache /var/cache/kiss-cache/ && \
+    chown -R kiss-cache /var/lib/kiss-cache/ && \
     chmod 775 /app && \
     django-admin startproject website /app
 

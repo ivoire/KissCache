@@ -56,6 +56,7 @@ urlpatterns = [
         name="resources.failures",
     ),
     path("statistics/", views.statistics, name="statistics"),
+    path("api/v1/health/", views.api_health, name="api.health"),
     path("api/v1/fetch/", views.api_fetch, name="api.fetch"),
     path("api/v1/fetch/<str:filename>", views.api_fetch, name="api.fetch"),
 ]
