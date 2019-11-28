@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 [ -n "$1" ] && exec "$@"
 
 #######################
@@ -88,7 +90,13 @@ then
   echo "done"
   echo ""
   echo "Applying migrations"
-  python3 manage.py migrate --noinput
+  python3 manage.py migrate --noinput || FAILED=1
+  if [ "$FAILED" = "1" ]
+  then
+    echo "Can not apply migrations"
+    echo "Waiting for migrations"
+    wait_migration
+  fi
   echo "done"
   echo ""
 
