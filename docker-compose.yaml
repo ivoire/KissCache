@@ -53,8 +53,9 @@ services:
     - "traefik.http.routers.web.rule=PathPrefix(`/`)"
     - "traefik.http.routers.web.service=web"
     - "traefik.http.services.web.loadbalancer.server.port=80"
-    - "traefik.http.services.web.loadbalancer.healthcheck.interval=10"
-    - "traefik.http.services.web.loadbalancer.healthcheck.timeout=5"
+    - "traefik.http.services.web.loadbalancer.healthcheck.interval=5s"
+    - "traefik.http.services.web.loadbalancer.healthcheck.timeout=2s"
+    - "traefik.http.services.web.loadbalancer.healthcheck.path=/api/v1/health/"
 
   front-proxy:
     image: ${KC_TRAEFIC}
