@@ -62,7 +62,7 @@ def help(request):
         "kiss_cache/help.html",
         {
             "ALLOWED_NETWORKS": settings.ALLOWED_NETWORKS,
-            "user_ip": request.META.get("HTTP_X_FORWARDED_FOR", "??"),
+            "user_ip": request.META.get("HTTP_X_FORWARDED_FOR", "??").split(",")[0],
             "user_ip_allowed": is_client_allowed(request),
             "api_url": request.build_absolute_uri(reverse("api.fetch")),
         },
