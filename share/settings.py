@@ -22,7 +22,7 @@ WHITENOISE_KEEP_ONLY_HASHED_FILES = True
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Celery settings
-CELERY_BROKER_URL = 'redis://redis:6379/0'
+CELERY_BROKER_URL = "redis://redis:6379/0"
 
 # Load settings from the configuration file
 with contextlib.suppress(FileNotFoundError):
