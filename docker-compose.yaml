@@ -61,7 +61,7 @@ services:
     image: ${KC_TRAEFIC}
     command: "--configfile /etc/traefik.yaml"
     ports:
-      - "80:80"
+      - "${KC_FRONT_PORT}:80"
     volumes:
     - ./share/traefik.yaml:/etc/traefik.yaml
     - /var/run/docker.sock:/var/run/docker.sock
