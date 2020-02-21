@@ -17,7 +17,6 @@ KissCache is able to:
 
 In a near future, KissCache will be able to:
 
-* support transparent caching
 * automatically re-fetch selected resources
 * ...
 
@@ -31,7 +30,7 @@ Installing
 KissCache is providing a docker-compose that will start the required services:
 
     git clone https://git.lavasoftware.org/ivoire/kisscache
-    docker-compose up
+    make
 
 The frontend will be available at http://localhost:8001/
 
@@ -61,31 +60,9 @@ In order to cache **https://example.com/kernel** with a local KissCache instance
 
     http://localhost:8001/api/v1/fetch/?url=https://example.com/kernel
 
-Apache2
--------
-
-It's recommended to setup a reverse proxy that will forward traffic to the
-gunicorn process at http://localhost:8001.
-
-The reverse proxy should set the headers:
-
-* *X-Forwarded-For*
-* *X-Forwarded-Host*
-* *X-Forwarded-Proto*
-
-Keep in mind that the reverse proxy **should not** forward an *X-Forwarded-For*
-header sent by the client.
-
-For apache2, the following configuration should work:
-
-    ProxyPass / http://127.0.0.1:8001/
-    ProxyPassReverse / http://127.0.0.1:8001/
-    RequestHeader unset X-Forwarded-For
-    RequestHeader set X-Forwarded-Proto 'https' env=HTTPS
-
 Debugging Django errors
 -----------------------
 
 If the KissCache is returning an error (500), you can activate the debug traces
 by adding **DEBUG=1** to the environment of the **web** service in the
-docker-compose.
+docker-compose configuration.
