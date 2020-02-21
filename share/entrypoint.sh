@@ -1,4 +1,10 @@
 #!/bin/sh
+#
+# Copyright 2019 Linaro Limited
+#
+# Author: Rémi Duraffort <remi.duraffort@linaro.org>
+#
+# SPDX-License-Identifier: MIT
 
 set -e
 
