@@ -13,6 +13,7 @@ import pathlib
 import time
 
 from django.db import models
+from django.db.models.aggregates import Sum
 from django.conf import settings
 
 
@@ -62,6 +63,19 @@ class Resource(models.Model):
         m.update(url.encode("utf-8"))
         data = m.hexdigest()
         return str(pathlib.Path(data[0:2]) / data[2:])
+
+    @classmethod
+    def total_size(cls):
+        size = cls.objects.aggregate(size=Sum("content_length"))["size"]
+        if size is None:
+            size = 0
+        return size
+
+    @classmethod
+    def is_over_quota(cls):
+        if settings.RESOURCE_QUOTA <= 0:
+            return False
+        return bool(cls.total_size() >= settings.RESOURCE_QUOTA)
 
     def progress(self):
         size = 0

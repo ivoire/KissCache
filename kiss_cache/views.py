@@ -12,7 +12,6 @@ from datetime import timedelta
 import pathlib
 import time
 
-from django.db.models.aggregates import Sum
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db import IntegrityError
 from django.db.models import F
@@ -61,9 +60,7 @@ def help(request):
 
 def statistics(request):
     # Compute the quota and current size
-    size = Resource.objects.aggregate(size=Sum("content_length"))["size"]
-    if size is None:
-        size = 0
+    size = Resource.total_size()
     quota = settings.RESOURCE_QUOTA
     progress = 0
     with contextlib.suppress(Exception):
@@ -182,11 +179,7 @@ def api_fetch(request, filename=None):
     if created:
         # We don't know yet the size of the resource, so just check that the
         # quota is not already consumed
-        total_size = Resource.objects.aggregate(size=Sum("content_length"))["size"]
-        if total_size is None:
-            total_size = 0
-
-        if total_size > settings.RESOURCE_QUOTA:
+        if Resource.is_over_quota():
             Resource.objects.filter(pk=res.pk).update(
                 state=Resource.STATE_FINISHED, status_code=507
             )
