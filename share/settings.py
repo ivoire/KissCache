@@ -12,6 +12,9 @@ import os
 import pathlib
 import yaml
 
+from kiss_cache.__about__ import __version__
+
+
 DEBUG = os.environ.get("DEBUG", False)
 ALLOWED_HOSTS = ["*"]
 STATIC_ROOT = "/app/static"
@@ -44,4 +47,8 @@ if "SENTRY_DSN" in os.environ:
     import sentry_sdk
     from sentry_sdk.integrations.django import DjangoIntegration
 
-    sentry_sdk.init(dsn=os.environ["SENTRY_DSN"], integrations=[DjangoIntegration()])
+    sentry_sdk.init(
+        dsn=os.environ["SENTRY_DSN"],
+        integrations=[DjangoIntegration()],
+        release=__version__,
+    )
