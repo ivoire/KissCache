@@ -17,14 +17,21 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
 
+def get_user_ip(request):
+    if "HTTP_X_FORWARDED_FOR" in request.META:
+        return request.META["HTTP_X_FORWARDED_FOR"].split(",")[0]
+    if "REMOTE_ADDR" in request.META:
+        return request.META["REMOTE_ADDR"]
+    raise Exception("Unable to get the user ip")
+
+
 def is_client_allowed(request):
     # If ALLOWED_NETWORKS is empty: accept every clients
     if not settings.ALLOWED_NETWORKS:
         return True
-    # Filter the clients
-    if "HTTP_X_FORWARDED_FOR" not in request.META:
-        raise Exception("Missing X-Forwarded-For header")
-    client_ip = ipaddress.ip_address(request.META["HTTP_X_FORWARDED_FOR"].split(",")[0])
+    # Filter the client
+    user_ip = get_user_ip(request)
+    client_ip = ipaddress.ip_address(user_ip)
     for rule in settings.ALLOWED_NETWORKS:
         if client_ip in ipaddress.ip_network(rule):
             return True

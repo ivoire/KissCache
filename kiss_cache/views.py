@@ -31,7 +31,7 @@ from django.views.decorators.http import require_safe
 from kiss_cache.__about__ import __version__
 from kiss_cache.models import Resource, Statistic
 from kiss_cache.tasks import fetch
-from kiss_cache.utils import check_client_ip, is_client_allowed
+from kiss_cache.utils import check_client_ip, is_client_allowed, get_user_ip
 
 
 def index(request):
@@ -51,7 +51,7 @@ def help(request):
         "kiss_cache/help.html",
         {
             "ALLOWED_NETWORKS": settings.ALLOWED_NETWORKS,
-            "user_ip": request.META.get("HTTP_X_FORWARDED_FOR", "??").split(",")[0],
+            "user_ip": get_user_ip(request),
             "user_ip_allowed": is_client_allowed(request),
             "api_url": request.build_absolute_uri(reverse("api.fetch")),
         },
