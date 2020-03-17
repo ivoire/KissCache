@@ -7,14 +7,18 @@
 {% block body %}
 <div class="row">
   <div class="col">
-    <h2>Quota</h2>
+    <h2>Quota{% if quota <= 0 %} (disabled){% endif %}</h2>
+    {% if quota > 0 %}
     <div class="progress">
       <div class="progress-bar progress-bar-striped bg-{{ progress_status }}" role="progressbar" style="width: {{ progress }}%" aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100">{{ progress }}%</div>
     </div>
     <p>Using {{ total_size|filesizeformat }} of {{ quota|filesizeformat }}.</p>
+    {% else %}
+    <p>Using {{ total_size|filesizeformat }}.</p>
+    {% endif %}
 
     <h2>Network usage</h2>
-    <p>KissCache has downloaded <span class="badge badge-pill badge-info" title="{{ download }}">{{ download|filesizeformat }}</span> and uploaded <span class="badge badge-pill badge-success" title="{{ upload }}">{{ upload|filesizeformat }}</span></p>
+    <p>KissCache has downloaded <span class="badge badge-pill badge-info" title="{{ download }}">{{ download|filesizeformat }}</span> and uploaded <span class="badge badge-pill badge-success" title="{{ upload }}">{{ upload|filesizeformat }}</span>.</p>
     <h2>Resources</h2>
     <table class="table table-striped">
       <thead class="thead-light">
