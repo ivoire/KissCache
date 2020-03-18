@@ -27,11 +27,9 @@ def test_resource_parse_ttl():
         Resource.parse_ttl("-1s")
 
 
-def test_resource_compute_path():
-    assert (
-        Resource.compute_path("https://example.com/kernel")
-        == "76/66828e5a43fe3e8c06c2e62ad216cc354c91da92f093d6d8a7c3dc9d1baa82"
-    )
+def test_resource_path(db):
+    res = Resource.objects.create(url="https://example.com/kernel")
+    assert res.path == "76/66828e5a43fe3e8c06c2e62ad216cc354c91da92f093d6d8a7c3dc9d1baa82"
 
 
 def test_resource_total_size(db):
@@ -65,7 +63,6 @@ def test_resource_total_size(db, settings):
 def test_resource_progress(db, settings, tmpdir):
     settings.DOWNLOAD_PATH = str(tmpdir)
     res = Resource.objects.create(url="https://example.com/kernel")
-    res.path = Resource.compute_path(res.url)
     assert res.progress() == "??"
     res.content_length = 56
     assert res.progress() == 0
@@ -82,8 +79,6 @@ def test_resource_stream(db, monkeypatch, settings, tmpdir):
 
     settings.DOWNLOAD_PATH = str(tmpdir)
     res = Resource.objects.create(url="https://example.com/kernel")
-    res.path = Resource.compute_path(res.url)
-    res.save()
     (tmpdir / "76").mkdir()
     with (
         tmpdir / "76/66828e5a43fe3e8c06c2e62ad216cc354c91da92f093d6d8a7c3dc9d1baa82"
@@ -111,8 +106,6 @@ def test_resource_stream_errors(db, monkeypatch, settings, tmpdir):
 
     settings.DOWNLOAD_PATH = str(tmpdir)
     res = Resource.objects.create(url="https://example.com/kernel")
-    res.path = Resource.compute_path(res.url)
-    res.save()
     (tmpdir / "76").mkdir()
     with (
         tmpdir / "76/66828e5a43fe3e8c06c2e62ad216cc354c91da92f093d6d8a7c3dc9d1baa82"
@@ -137,8 +130,6 @@ def test_resource_stream_errors_2(db, monkeypatch, settings, tmpdir):
 
     settings.DOWNLOAD_PATH = str(tmpdir)
     res = Resource.objects.create(url="https://example.com/kernel")
-    res.path = Resource.compute_path(res.url)
-    res.save()
     (tmpdir / "76").mkdir()
     with (
         tmpdir / "76/66828e5a43fe3e8c06c2e62ad216cc354c91da92f093d6d8a7c3dc9d1baa82"

@@ -22,8 +22,6 @@ class Resource(models.Model):
     url = models.URLField(unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     ttl = models.IntegerField(default=60 * 60 * 24)
-    # TODO: remove null=True
-    path = models.CharField(max_length=65, blank=True, null=True)
     content_length = models.IntegerField(blank=True, null=True)
     content_type = models.CharField(max_length=256, blank=True)
     last_usage = models.DateTimeField(blank=True, null=True)
@@ -37,6 +35,15 @@ class Resource(models.Model):
     )
     state = models.IntegerField(choices=STATE_CHOICES, default=STATE_SCHEDULED)
     status_code = models.IntegerField(default=0)
+
+    # Compute the path
+    @property
+    def path(self):
+        # TODO: take created_at into account
+        m = hashlib.sha256()
+        m.update(self.url.encode("utf-8"))
+        data = m.hexdigest()
+        return str(pathlib.Path(data[0:2]) / data[2:])
 
     # Parse the ttl
     @classmethod
@@ -55,14 +62,6 @@ class Resource(models.Model):
         if ttl <= 0:
             raise Exception("The TTL should be positive")
         return ttl
-
-    # Compute the path
-    @classmethod
-    def compute_path(cls, url):
-        m = hashlib.sha256()
-        m.update(url.encode("utf-8"))
-        data = m.hexdigest()
-        return str(pathlib.Path(data[0:2]) / data[2:])
 
     @classmethod
     def total_size(cls):
