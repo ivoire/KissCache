@@ -22,7 +22,19 @@ urlpatterns = [
         name="resources.scheduled",
     ),
     path(
+        "resources/scheduled/<int:page>/",
+        views.resources,
+        {"state": "scheduled"},
+        name="resources.scheduled",
+    ),
+    path(
         "resources/downloading/",
+        views.resources,
+        {"state": "downloading"},
+        name="resources.downloading",
+    ),
+    path(
+        "resources/downloading/<int:page>/",
         views.resources,
         {"state": "downloading"},
         name="resources.downloading",
@@ -31,7 +43,13 @@ urlpatterns = [
         "resources/successes/",
         views.resources,
         {"state": "successes"},
-        name="resources",
+        name="resources.successes",
+    ),
+    path(
+        "resources/successes/<int:page>/",
+        views.resources,
+        {"state": "successes"},
+        name="resources.successes",
     ),
     path(
         "resources/failures/",

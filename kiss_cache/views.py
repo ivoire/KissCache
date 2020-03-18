@@ -19,6 +19,7 @@ from django.db.models.functions import Now
 from django.conf import settings
 from django.http import (
     FileResponse,
+    Http404,
     HttpResponse,
     HttpResponseBadRequest,
     StreamingHttpResponse,
@@ -121,8 +122,10 @@ def resources(request, page=1, state="successes"):
     paginator = Paginator(query, 25)
     try:
         page = paginator.page(page)
-    except (PageNotAnInteger, EmptyPage):
+    except PageNotAnInteger:
         return HttpResponseBadRequest()
+    except EmptyPage:
+        raise Http404()
 
     return render(
         request,

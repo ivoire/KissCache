@@ -17,7 +17,7 @@
         <a class="nav-link text-info{% if state == "downloading" %} active{% endif %}" href="{% url 'resources.downloading' %}" role="tab" aria-selected="true">Downloading <span class="badge badge-pill badge-info">{{ downloading_count }}</span></a>
       </li>
       <li class="nav-item">
-        <a class="nav-link text-success{% if state == "successes" %} active {% endif %}" href="{% url 'resources' %}" role="tab" aria-selected="true">Successes <span class="badge badge-pill badge-success">{{ successes_count }}</span></a>
+        <a class="nav-link text-success{% if state == "successes" %} active {% endif %}" href="{% url 'resources.successes' %}" role="tab" aria-selected="true">Successes <span class="badge badge-pill badge-success">{{ successes_count }}</span></a>
       </li>
       <li class="nav-item">
         <a class="nav-link text-danger{% if state == "failures" %} active{% endif %}" href="{% url 'resources.failures' %}" role="tab" aria-selected="true">Failures <span class="badge badge-pill badge-danger">{{ failures_count }}</span></a>
