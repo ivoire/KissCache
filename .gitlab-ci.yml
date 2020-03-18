@@ -33,24 +33,25 @@ stages:
 ########
 # Test #
 ########
-.test: &test
+test-debian-11:
+  image: debian:bullseye
   <<: *job
   stage: test
   tags: [amd64]
   before_script:
   - apt-get update -qq
-  - apt-get install --no-install-recommends -y python3 python3-django python3-pytest python3-pytest-django python3-requests python3-celery python3-pylint-celery
+  - apt-get install --no-install-recommends -y python3 python3-celery python3-django python3-requests
+  - apt-get install --no-install-recommends -y python3-pytest python3-pylint-celery python3-pytest-cov python3-pytest-django
+  coverage: '/^TOTAL.+ (\d+\.\d+)%$/'
   script:
   - ln -s tests/manage.py manage.py
-  - PYTHONPATH=. pytest-3 -v --junitxml=kiss_cache.xml tests/
+  - PYTHONPATH=. pytest-3 -v --junitxml=kiss_cache.xml --cov=kiss_cache --cov-report=html --cov-report=term tests/
   artifacts:
+    paths:
+    - htmlcov/
     reports:
       junit:
       - kiss_cache.xml
-
-test-debian-11:
-  <<: *test
-  image: debian:bullseye
 
 ###########
 # Analyze #
