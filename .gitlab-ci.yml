@@ -45,7 +45,7 @@ test-debian-11:
   coverage: '/^TOTAL.+ (\d+)%$/'
   script:
   - ln -s tests/manage.py manage.py
-  - PYTHONPATH=. pytest-3 -v --junitxml=kiss_cache.xml --cov=kiss_cache --cov-report=html --cov-report=term tests/
+  - PYTHONPATH=. pytest-3 -v --junitxml=kiss_cache.xml --cov=kiss_cache --cov-report=html --cov-report=term --cov-fail-under=88 tests/
   artifacts:
     paths:
     - htmlcov/
