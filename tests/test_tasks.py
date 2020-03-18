@@ -44,6 +44,7 @@ def test_fetch(caplog, db, mocker, settings, tmpdir):
         return RequestRetry()
 
     mocker.patch("kiss_cache.tasks.requests_retry", requests_retry)
+    mocker.patch("time.time", lambda: 0)
 
     fetch("https://example.com")
     assert (
@@ -66,7 +67,7 @@ def test_fetch(caplog, db, mocker, settings, tmpdir):
         ("kiss_cache.tasks", 20, "progress  80% (0MB)"),
         ("kiss_cache.tasks", 20, "progress  90% (0MB)"),
         ("kiss_cache.tasks", 20, "progress 100% (0MB)"),
-        ("kiss_cache.tasks", 20, "0MB downloaded in 0.00s (0.02MB/s)"),
+        ("kiss_cache.tasks", 20, "0MB downloaded in 0.00s (??MB/s)"),
     ]
 
 
