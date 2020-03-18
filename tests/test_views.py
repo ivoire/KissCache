@@ -7,7 +7,10 @@
 #
 # SPDX-License-Identifier: MIT
 
+from django.http import FileResponse
+from django.http.response import StreamingHttpResponse
 from django.urls import reverse
+from django.utils import timezone
 
 from kiss_cache.__about__ import __version__
 from kiss_cache.models import Resource, Statistic
@@ -185,10 +188,119 @@ def test_resources(client, db):
     assert ret.context["failures_count"] == 1
 
 
-def test_api_health(client, settings, tmpdir):
+def test_api_health(client, mocker, settings, tmpdir):
     settings.SHUTDOWN_PATH = str(tmpdir / "shutdown")
     ret = client.get(reverse("api.health"))
 
     (tmpdir / "shutdown").write_text("", encoding="utf-8")
     ret = client.get(reverse("api.health"))
     assert ret.status_code == 503
+
+
+def test_api_fetch(client, db, mocker, settings, tmpdir):
+    URL = "https://example.com"
+
+    def mocked_fetch(url):
+        assert url == URL
+        Resource.objects.filter(url=URL).update(
+            state=Resource.STATE_FINISHED,
+            status_code=200,
+            content_length=12,
+            content_type="text/html; charset=UTF-8",
+        )
+        path = Resource.objects.get(url=URL).path
+        assert (
+            path == "10/0680ad546ce6a577f42f52df33b4cfdca756859e664b8d7de329b150d09ce9"
+        )
+        (tmpdir / "10").mkdir()
+        (
+            tmpdir / "10/0680ad546ce6a577f42f52df33b4cfdca756859e664b8d7de329b150d09ce9"
+        ).write_text("Hello world!", encoding="utf-8")
+
+    settings.DOWNLOAD_PATH = str(tmpdir)
+
+    fetch = mocker.patch("kiss_cache.tasks.fetch.delay", mocked_fetch)
+
+    ret = client.get(f"{reverse('api.fetch')}?url={URL}&ttl=42d")
+    assert isinstance(ret, FileResponse)
+    assert ret._closable_objects[0].name == str(
+        tmpdir / "10/0680ad546ce6a577f42f52df33b4cfdca756859e664b8d7de329b150d09ce9"
+    )
+    assert ret.status_code == 200
+    assert ret._headers["content-type"] == ("Content-Type", "text/html; charset=UTF-8")
+    assert ret._headers["content-length"] == ("Content-Length", "12")
+    assert next(ret.streaming_content) == b"Hello world!"
+
+    # Download a second time
+    ret = client.get(f"{reverse('api.fetch')}?url={URL}&ttl=42d")
+    assert isinstance(ret, FileResponse)
+    assert ret._closable_objects[0].name == str(
+        tmpdir / "10/0680ad546ce6a577f42f52df33b4cfdca756859e664b8d7de329b150d09ce9"
+    )
+    assert ret.status_code == 200
+    assert ret._headers["content-type"] == ("Content-Type", "text/html; charset=UTF-8")
+    assert ret._headers["content-length"] == ("Content-Length", "12")
+    assert next(ret.streaming_content) == b"Hello world!"
+
+    # Download a third time and set a shorter ttl
+    now = timezone.now()
+    mocker.patch("django.utils.timezone.now", lambda: now)
+    ret = client.get(f"{reverse('api.fetch')}?url={URL}&ttl=4d")
+    assert isinstance(ret, FileResponse)
+    assert ret._closable_objects[0].name == str(
+        tmpdir / "10/0680ad546ce6a577f42f52df33b4cfdca756859e664b8d7de329b150d09ce9"
+    )
+    assert ret.status_code == 200
+    assert ret._headers["content-type"] == ("Content-Type", "text/html; charset=UTF-8")
+    assert ret._headers["content-length"] == ("Content-Length", "12")
+    assert next(ret.streaming_content) == b"Hello world!"
+    assert Resource.objects.get(url=URL).ttl == 345_600
+
+
+def test_api_fetch_streaming(client, db, mocker, settings, tmpdir):
+    URL = "https://example.com"
+
+    def mocked_fetch(url):
+        assert url == URL
+        Resource.objects.filter(url=URL).update(
+            state=Resource.STATE_DOWNLOADING,
+            status_code=200,
+            content_length=12,
+            content_type="text/html; charset=UTF-8",
+        )
+        path = Resource.objects.get(url=URL).path
+        assert (
+            path == "10/0680ad546ce6a577f42f52df33b4cfdca756859e664b8d7de329b150d09ce9"
+        )
+        (tmpdir / "10").mkdir()
+        (
+            tmpdir / "10/0680ad546ce6a577f42f52df33b4cfdca756859e664b8d7de329b150d09ce9"
+        ).write_text("Hello world!", encoding="utf-8")
+
+    settings.DOWNLOAD_PATH = str(tmpdir)
+
+    fetch = mocker.patch("kiss_cache.tasks.fetch.delay", mocked_fetch)
+
+    ret = client.get(f"{reverse('api.fetch')}?url={URL}&ttl=42d")
+    assert isinstance(ret, StreamingHttpResponse)
+    assert ret.status_code == 200
+    assert ret._headers["content-type"] == ("Content-Type", "text/html; charset=UTF-8")
+    assert ret._headers["content-length"] == ("Content-Length", "12")
+    assert next(ret.streaming_content) == b"Hello world!"
+
+
+def test_api_fetch_errors(client, db, mocker):
+    URL = "https://example.com"
+
+    #  missing url
+    ret = client.get(reverse("api.fetch"))
+    assert ret.status_code == 400
+
+    # Invalid ttl format
+    ret = client.get(f"{reverse('api.fetch')}?url={URL}&ttl=1k")
+    assert ret.status_code == 400
+
+    # Over quota
+    mocker.patch("kiss_cache.models.Resource.is_over_quota", lambda: True)
+    ret = client.get(f"{reverse('api.fetch')}?url={URL}")
+    assert ret.status_code == 507
