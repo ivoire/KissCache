@@ -29,7 +29,9 @@ def test_resource_parse_ttl():
 
 def test_resource_path(db):
     res = Resource.objects.create(url="https://example.com/kernel")
-    assert res.path == "76/66828e5a43fe3e8c06c2e62ad216cc354c91da92f093d6d8a7c3dc9d1baa82"
+    assert (
+        res.path == "76/66828e5a43fe3e8c06c2e62ad216cc354c91da92f093d6d8a7c3dc9d1baa82"
+    )
 
 
 def test_resource_total_size(db):

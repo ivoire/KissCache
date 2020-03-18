@@ -1,3 +1,12 @@
+# -*- coding: utf-8 -*-
+# vim: set ts=4
+#
+# Copyright 2019 Linaro Limited
+#
+# Author: Rémi Duraffort <remi.duraffort@linaro.org>
+#
+# SPDX-License-Identifier: MIT
+
 import os
 import random
 
@@ -67,6 +76,7 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
+STATIC_URL = "/static/"
 # Celery settings
 CELERY_BROKER_URL = "redis://localhost:6379/0"
 
