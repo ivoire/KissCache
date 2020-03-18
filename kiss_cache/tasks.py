@@ -7,6 +7,7 @@
 #
 # SPDX-License-Identifier: MIT
 
+import contextlib
 from datetime import timedelta
 import logging
 import math
@@ -121,11 +122,14 @@ def fetch(url):
 
             # Log the speed
             end = time.time()
+            speed = "??"
+            with contextlib.suppress(ZeroDivisionError):
+                speed = "%0.2f" % round(size / (1024 * 1024 * (end - start)), 2)
             LOG.info(
-                "%dMB downloaded in %0.2fs (%0.2fMB/s)",
+                "%dMB downloaded in %0.2fs (%sMB/s)",
                 size / (1024 * 1024),
                 round(end - start, 2),
-                round(size / (1024 * 1024 * (end - start)), 2),
+                speed,
             )
 
         except requests.RequestException as exc:
