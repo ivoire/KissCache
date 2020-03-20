@@ -106,5 +106,5 @@ then
   echo "done"
   echo ""
 
-  exec gunicorn3 --log-level info --bind 0.0.0.0:80 --threads 10 --workers 4 --worker-tmp-dir /dev/shm website.wsgi
+  exec gunicorn3 --log-level debug --bind 0.0.0.0:80 --threads 10 --workers 4 --worker-tmp-dir /dev/shm website.wsgi
 fi
