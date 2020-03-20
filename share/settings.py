@@ -43,12 +43,12 @@ with contextlib.suppress(FileNotFoundError):
         globals()[k] = v
 
 # Add sentry if SENTRY_DSN is defined
-if "SENTRY_DSN" in os.environ:
+if "SENTRY_DSN" in globals():
     import sentry_sdk
     from sentry_sdk.integrations.django import DjangoIntegration
 
     sentry_sdk.init(
-        dsn=os.environ["SENTRY_DSN"],
+        dsn=globals()["SENTRY_DSN"],
         integrations=[DjangoIntegration()],
         release=__version__,
     )
