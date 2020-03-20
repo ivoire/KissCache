@@ -1,6 +1,9 @@
 all:
-	docker-compose build
+	docker-compose pull
 	docker-compose up
+
+build:
+	docker-compose build
 
 clean:
 	docker-compose rm -vsf
@@ -10,5 +13,5 @@ distclean: clean
 
 upgrade:
 	docker-compose pull
-	docker-compose run web python3 manage.py migrate
+	docker-compose run --rm web python3 manage.py migrate
 	docker-compose up -d --remove-orphans
