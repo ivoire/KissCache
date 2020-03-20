@@ -1,4 +1,4 @@
-FROM debian:buster-slim
+FROM debian:bullseye-slim
 
 LABEL maintainer="Rémi Duraffort <remi.duraffort@linaro.org>"
 
@@ -6,10 +6,12 @@ ENV DEBIAN_FRONTEND noninteractive
 
 # Install dependencies
 RUN apt-get update -q && \
-    apt-get install --no-install-recommends --yes gunicorn3 python3 python3-celery python3-pip python3-psycopg2 python3-redis python3-requests python3-yaml && \
-    python3 -m pip install --upgrade "django>=2.2,<=2.3" whitenoise && \
+    apt-get install --no-install-recommends --yes gunicorn python3 python3-celery python3-django python3-django-auth-ldap python3-pip python3-psycopg2 python3-redis python3-requests python3-whitenoise python3-yaml && \
+    apt-get install --no-install-recommends --yes libjs-jquery && \
+    python3 -m pip install sentry-sdk && \
     # Cleanup
     apt-get clean && \
+    find /usr/lib/python3/dist-packages/ -name '__pycache__' -type d -exec rm -r "{}" + && \
     rm -rf /var/lib/apt/lists/*
 
 # Create the django project
