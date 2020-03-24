@@ -13,7 +13,7 @@ from kiss_cache.models import Resource, Statistic
 
 
 class ResourceAdmin(admin.ModelAdmin):
-    list_display = ("url", "path", "state", "ttl", "usage")
+    list_display = ("url", "path", "state", "status_code", "ttl", "usage")
     list_filter = ("state", "ttl")
     ordering = ["url"]
 
