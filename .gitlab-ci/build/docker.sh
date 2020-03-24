@@ -11,7 +11,8 @@ else
   set -x
 
   # Build the docker image
-  docker build -t $CI_REGISTRY_IMAGE:latest . --build-arg VERSION=$(git describe)
+  VERSION=$(git describe)
+  docker build -t $CI_REGISTRY_IMAGE:latest . --build-arg VERSION="$VERSION"
 
   # Push only for tags or master
   if [ "$CI_COMMIT_REF_SLUG" = "master" -o -n "$CI_COMMIT_TAG" ]
