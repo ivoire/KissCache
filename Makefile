@@ -13,5 +13,5 @@ distclean: clean
 
 upgrade:
 	docker-compose pull
-	docker-compose run --rm web python3 manage.py migrate
+	docker-compose run --no-deps --rm web python3 manage.py migrate
 	docker-compose up -d --remove-orphans
