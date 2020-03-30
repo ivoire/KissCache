@@ -22,6 +22,7 @@ from django.db.models import F
 from django.conf import settings
 from django.utils import timezone
 
+from kiss_cache.__about__ import __version__
 from kiss_cache.models import Resource, Statistic
 from kiss_cache.utils import requests_retry
 
@@ -63,7 +64,7 @@ def fetch(url):
         req = requests_retry().get(
             res.url,
             stream=True,
-            headers={"Accept-Encoding": ""},
+            headers={"Accept-Encoding": "", "User-Agent": f"kisscache/{__version__}"},
             timeout=settings.DOWNLOAD_TIMEOUT,
         )
     except requests.RequestException as exc:
