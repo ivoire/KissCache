@@ -10,6 +10,7 @@
 import logging
 import requests
 
+from kiss_cache.__about__ import __version__
 from kiss_cache.models import Resource, Statistic
 from kiss_cache.tasks import fetch
 
@@ -36,7 +37,10 @@ def test_fetch(caplog, db, mocker, settings, tmpdir):
         def get(self, url, stream, headers, timeout):
             assert url == "https://example.com"
             assert stream is True
-            assert headers == {"Accept-Encoding": ""}
+            assert headers == {
+                "Accept-Encoding": "",
+                "User-Agent": f"KissCache/{__version__}",
+            }
             assert timeout == settings.DOWNLOAD_TIMEOUT
             return Response()
 
@@ -93,7 +97,10 @@ def test_fetch_no_content_length(caplog, db, mocker, settings, tmpdir):
         def get(self, url, stream, headers, timeout):
             assert url == "https://example.com"
             assert stream is True
-            assert headers == {"Accept-Encoding": ""}
+            assert headers == {
+                "Accept-Encoding": "",
+                "User-Agent": f"KissCache/{__version__}",
+            }
             assert timeout == settings.DOWNLOAD_TIMEOUT
             return Response()
 
@@ -175,7 +182,10 @@ def test_fetch_errors_2(caplog, db, mocker, settings, tmpdir):
         def get(self, url, stream, headers, timeout):
             assert url == "https://example.com"
             assert stream is True
-            assert headers == {"Accept-Encoding": ""}
+            assert headers == {
+                "Accept-Encoding": "",
+                "User-Agent": f"KissCache/{__version__}",
+            }
             assert timeout == settings.DOWNLOAD_TIMEOUT
             raise requests.RequestException("Unable to donwload 'https://example.com'")
 
@@ -213,7 +223,10 @@ def test_fetch_errors_3(caplog, db, mocker, settings, tmpdir):
         def get(self, url, stream, headers, timeout):
             assert url == "https://example.com"
             assert stream is True
-            assert headers == {"Accept-Encoding": ""}
+            assert headers == {
+                "Accept-Encoding": "",
+                "User-Agent": f"KissCache/{__version__}",
+            }
             assert timeout == settings.DOWNLOAD_TIMEOUT
             return Response()
 

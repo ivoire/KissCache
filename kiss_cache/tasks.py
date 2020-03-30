@@ -64,7 +64,7 @@ def fetch(url):
         req = requests_retry().get(
             res.url,
             stream=True,
-            headers={"Accept-Encoding": "", "User-Agent": f"kisscache/{__version__}"},
+            headers={"Accept-Encoding": "", "User-Agent": f"KissCache/{__version__}"},
             timeout=settings.DOWNLOAD_TIMEOUT,
         )
     except requests.RequestException as exc:
