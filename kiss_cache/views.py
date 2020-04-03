@@ -203,15 +203,12 @@ def api_fetch(request, filename=None):
             res.ttl = ttl
             Resource.objects.filter(pk=res.pk).update(ttl=ttl)
 
+    # Wait for the task to start
+    # TODO: add timeout
     res.refresh_from_db()
-    if res.state == Resource.STATE_SCHEDULED:
-        # Wait for the task to start
-        # TODO: add timeout
-        while True:
-            res.refresh_from_db()
-            if res.state != Resource.STATE_SCHEDULED:
-                break
-            time.sleep(1)
+    while res.state == Resource.STATE_SCHEDULED:
+        time.sleep(1)
+        res.refresh_from_db()
 
     # Update the statistics
     if res.content_length:
