@@ -210,8 +210,9 @@ def api_fetch(request, filename=None):
         time.sleep(1)
         res.refresh_from_db()
 
-    # Update the statistics
-    if res.content_length:
+    # Update the statistics (only for GET has with HEAD, django will just
+    # return headers, not the body)
+    if request.method == "GET" and res.content_length:
         Statistic.objects.filter(stat=Statistic.STAT_UPLOAD).update(
             value=F("value") + res.content_length
         )
