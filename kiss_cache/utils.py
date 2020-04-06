@@ -54,8 +54,31 @@ def requests_retry():
     session = requests.Session()
     retries = settings.DOWNLOAD_RETRY
     backoff_factor = settings.DOWNLOAD_BACKOFF_FACTOR
+    status_forcelist = [
+        # See https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
+        408,  # Request Timeout
+        413,  # Payload Too Large
+        425,  # Too Early
+        429,  # Too Many Requests
+        500,  # Internal Server Error
+        502,  # Bad Gateway
+        503,  # Service Unavailable
+        504,  # Gateway Timeout
+        507,  # Insufficient Storage
+        # Unofficial codes
+        420,  # Enhance Your Calm
+        430,  # Request Header Fields Too Large
+        509,  # Bandwidth Limit Exceeded
+        529,  # Site is overloaded
+        598,  # (Informal convention) Network read timeout error
+    ]
     retry = Retry(
-        total=retries, read=retries, connect=retries, backoff_factor=backoff_factor
+        total=retries,
+        read=retries,
+        connect=retries,
+        status=retries,
+        status_forcelist=status_forcelist,
+        backoff_factor=backoff_factor,
     )
     adapter = HTTPAdapter(max_retries=retry)
     session.mount("http://", adapter)
