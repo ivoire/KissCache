@@ -9,6 +9,15 @@
 
 # fail after 10 minutes
 DOWNLOAD_TIMEOUT = 10 * 60
+# See https://urllib3.readthedocs.io/en/latest/reference/urllib3.util.html
+DOWNLOAD_RETRY = 15
+# A backoff factor to apply between attempts after the second try (most errors
+# are resolved immediately by a second try without a delay). urllib3 will sleep
+# for:
+#    {backoff factor} * (2 ** ({number of total retries} - 1))
+# seconds. If the backoff_factor is 0.1, then sleep() will sleep for [0.0s,
+# 0.2s, 0.4s, …] between retries.
+DOWNLOAD_BACKOFF_FACTOR = 0.1
 
 # base directory
 DOWNLOAD_PATH = "/var/cache/kiss-cache"
