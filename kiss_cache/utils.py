@@ -53,7 +53,7 @@ def check_client_ip(func):
 def requests_retry():
     session = requests.Session()
     retries = settings.DOWNLOAD_RETRY
-    backoff_factor = setting.DOWNLOAD_BACKOFF_FACTOR
+    backoff_factor = settings.DOWNLOAD_BACKOFF_FACTOR
     retry = Retry(
         total=retries, read=retries, connect=retries, backoff_factor=backoff_factor
     )
