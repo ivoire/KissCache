@@ -36,18 +36,23 @@ class Resource(models.Model):
     state = models.IntegerField(choices=STATE_CHOICES, default=STATE_SCHEDULED)
     status_code = models.IntegerField(default=0)
 
-    # Compute the path
     @property
     def path(self):
+        """ Compute the path of the local file """
         # TODO: take created_at into account
         m = hashlib.sha256()
         m.update(self.url.encode("utf-8"))
         data = m.hexdigest()
         return str(pathlib.Path(data[0:2]) / data[2:])
 
-    # Parse the ttl
     @classmethod
     def parse_ttl(cls, val):
+        """
+        Parse the TTL (Time To Live)
+
+        The TTL should be of the form <integer><unit>.
+        Accepted units are "dhms" for days, hours, minutes and seconds.
+        """
         if val.endswith("d"):
             ttl = int(val[:-1]) * 60 * 60 * 24
         elif val.endswith("h"):
@@ -65,6 +70,7 @@ class Resource(models.Model):
 
     @classmethod
     def total_size(cls):
+        """ Compute the sum of the size of all Resources """
         size = cls.objects.aggregate(size=Sum("content_length"))["size"]
         if size is None:
             size = 0
@@ -72,11 +78,13 @@ class Resource(models.Model):
 
     @classmethod
     def is_over_quota(cls):
+        """ Returns True if the quota is already fully used """
         if settings.RESOURCE_QUOTA <= 0:
             return False
         return bool(cls.total_size() >= settings.RESOURCE_QUOTA)
 
     def progress(self):
+        """ Return a string with the download progress """
         size = 0
         with contextlib.suppress(Exception):
             size = (pathlib.Path(settings.DOWNLOAD_PATH) / self.path).stat().st_size
@@ -86,9 +94,15 @@ class Resource(models.Model):
         return "??"
 
     def open(self, mode):
+        """ Open the underlying file and return the file object """
         return (pathlib.Path(settings.DOWNLOAD_PATH) / self.path).open(mode)
 
     def stream(self):
+        """
+        Stream the resource while it's being downloaded.
+
+        If the database object is removed, raise a 404.
+        """
         with self.open("rb") as f_in:
             while True:
                 # Send as most data as possible
