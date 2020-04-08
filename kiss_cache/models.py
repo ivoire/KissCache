@@ -101,37 +101,51 @@ class Resource(models.Model):
         """
         Stream the resource while it's being downloaded.
 
-        If the database object is removed, raise a 404.
+        While the content is streamed, the number of bytes send is counted.
+        If the resource is deleted, the function will continue to stream the
+        content anyway. If the final count of byte is the same as content_length then
+        the file was fully streamed correctly.
+        This allow to delete resources while they are in use and in STATE_FINISHED.
         """
+        current_length = 0
+        deleted = False
+
+        # The underlying file is opened. Even if the resource is removed, the
+        # file won't be removed by the OS until the file descriptor is removed.
         with self.open("rb") as f_in:
-            while True:
+            while self.state != Resource.STATE_FINISHED:
                 # Send as most data as possible
                 data = f_in.read()
                 while data:
+                    current_length += len(data)
                     yield data
                     data = f_in.read()
 
-                # Are we done with downloading?
+                # Refresh from database
                 try:
                     time.sleep(1)
                     self.refresh_from_db()
                 except Resource.DoesNotExist:
-                    # The object was removed from the db => 404
-                    self.status_code = 404
+                    # The object was removed from the db
+                    # Continue to stream the data
                     self.state = Resource.STATE_FINISHED
-
-                if self.state == Resource.STATE_FINISHED:
-                    break
-
-            # Check the status code
-            if self.status_code != 200:
-                raise Exception("status-code is not 200: %d" % self.status_code)
+                    deleted = True
 
             # Send the remaining data
             data = f_in.read()
             while data:
+                current_length += len(data)
                 yield data
                 data = f_in.read()
+
+            # If the Resource has been deleted, we should check that the length
+            # is right.
+            if deleted:
+                if self.content_length:
+                    if current_length != self.content_length:
+                        raise Exception("Resource was deleted and length is wrong")
+                else:
+                    raise Exception("Resource was deleted and length is unknow")
 
 
 class Statistic(models.Model):
