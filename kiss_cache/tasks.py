@@ -91,17 +91,18 @@ def fetch(url):
     )
     res.refresh_from_db()
 
-    # TODO: make this idempotent to allow for task restart
+    # Keep track of the total amount of data
     size = 0
-    with res.open(mode="wb") as f_out:
-        # Informe the caller about the current state
-        Resource.objects.filter(pk=res.pk).update(state=Resource.STATE_DOWNLOADING)
-        res.refresh_from_db()
-        try:
+    # TODO: make this idempotent to allow for task restart
+    try:
+        with res.open(mode="wb") as f_out:
+            # Informe the caller about the current state
+            Resource.objects.filter(pk=res.pk).update(state=Resource.STATE_DOWNLOADING)
+            res.refresh_from_db()
+
             # variables to log progress
             last_logged_value = 0
             start = time.time()
-
             # Loop on the data
             iterator = req.iter_content(
                 chunk_size=settings.DOWNLOAD_CHUNK_SIZE, decode_unicode=False
@@ -133,14 +134,14 @@ def fetch(url):
                 speed,
             )
 
-        except requests.RequestException as exc:
-            LOG.error("Unable to fetch '%s'", url)
-            LOG.exception(exc)
-            Resource.objects.filter(pk=res.pk).update(
-                state=Resource.STATE_FINISHED, status_code=504
-            )
-            req.close()
-            return
+    except requests.RequestException as exc:
+        LOG.error("Unable to fetch '%s'", url)
+        LOG.exception(exc)
+        Resource.objects.filter(pk=res.pk).update(
+            state=Resource.STATE_FINISHED, status_code=504
+        )
+        # TODO: remove the file
+        return
 
     # Check or save the size
     if res.content_length:
