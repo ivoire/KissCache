@@ -20,6 +20,7 @@ from celery.utils.log import get_task_logger
 
 from django.db.models import F
 from django.conf import settings
+from django.template.defaultfilters import filesizeformat
 from django.utils import timezone
 
 from kiss_cache.__about__ import __version__
