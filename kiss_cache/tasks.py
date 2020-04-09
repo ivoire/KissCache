@@ -168,7 +168,7 @@ def fetch(url):
 def expire():
     LOG.info("Expiring resources")
     now = timezone.now()
-    for res in Resource.objects.all():
+    for res in Resource.objects.filter(state=Resource.STATE_FINISHED):
         if res.created_at + timedelta(seconds=res.ttl) < now:
             LOG.info("* '%s'", res.url)
             res.delete()
