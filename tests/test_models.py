@@ -123,7 +123,8 @@ def test_resource_stream_errors(db, monkeypatch, settings, tmpdir):
         res.status_code = 403
         res.state = Resource.STATE_FINISHED
         res.save()
-    with pytest.raises(Exception, match="status-code is not 200: 403"):
+    # The length is right: no exception will be raised
+    with pytest.raises(StopIteration):
         next(it)
 
 
@@ -145,5 +146,5 @@ def test_resource_stream_errors_2(db, monkeypatch, settings, tmpdir):
         assert next(it) == b" world"
 
         res.delete()
-    with pytest.raises(Exception, match="status-code is not 200: 404"):
+    with pytest.raises(Exception, match="Resource was deleted and length is unknow"):
         next(it)
