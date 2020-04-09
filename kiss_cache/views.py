@@ -100,7 +100,14 @@ def statistics(request):
 
 
 def resources(request, page=1, state="successes"):
-    query = Resource.objects.order_by("url")
+    # Sort order
+    order = request.GET.get("order", "-last_usage")
+    attribute = order[1:] if order[0] == "-" else order
+    if not hasattr(Resource, attribute):
+        return HttpResponseBadRequest(f"Invalid sort order '{order}'")
+
+    # Build the query
+    query = Resource.objects.order_by(order, "-last_usage")
     scheduled = query.filter(state=Resource.STATE_SCHEDULED).count()
     downloading = query.filter(state=Resource.STATE_DOWNLOADING).count()
     successes = query.filter(state=Resource.STATE_FINISHED, status_code=200).count()
@@ -132,6 +139,8 @@ def resources(request, page=1, state="successes"):
         "kiss_cache/resources.html",
         {
             "resources": page,
+            "order": order,
+            "order_reversed": order[0] == "-",
             "state": state,
             "url_name": "resources." + state,
             "scheduled_count": scheduled,

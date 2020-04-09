@@ -1,5 +1,6 @@
 {% extends 'kiss_cache/base.html' %}
 {% load static %}
+{% load kiss_cache %}
 
 {% block title %} - Resources{% endblock %}
 
@@ -30,8 +31,8 @@
         <table class="table table-striped">
           <thead class="thead-light">
             <tr>
-              <th>URL</th>
-              <th>TTL</th>
+              <th>URL{{ order|sort_icon:"url" }}</th>
+              <th>TTL{{ order|sort_icon:"ttl" }}</th>
             </tr>
           </thead>
           <tbody>
@@ -49,9 +50,9 @@
         <table class="table table-striped">
           <thead class="thead-light">
             <tr>
-              <th>URL</th>
-              <th>TTL</th>
-              <th>Size</th>
+              <th>URL{{ order|sort_icon:"url" }}</th>
+              <th>TTL{{ order|sort_icon:"ttl" }}</th>
+              <th>Size{{ order|sort_icon:"content_length" }}</th>
               <th>Progress</th>
             </tr>
           </thead>
@@ -76,11 +77,11 @@
         <table class="table table-striped">
           <thead class="thead-light">
             <tr>
-              <th>URL</th>
-              <th>Last usage</th>
-              <th>Count</th>
-              <th>TTL</th>
-              <th>Size</th>
+              <th>URL{{ order|sort_icon:"url" }}</th>
+              <th>Last usage{{ order|sort_icon:"last_usage" }}</th>
+              <th>Count{{ order|sort_icon:"usage" }}</th>
+              <th>TTL{{ order|sort_icon:"ttl" }}</th>
+              <th>Size{{ order|sort_icon:"content_length" }}</th>
             </tr>
           </thead>
           <tbody>
@@ -101,12 +102,12 @@
         <table class="table table-striped">
           <thead class="thead-light">
             <tr>
-              <th>URL</th>
-              <th>code</th>
-              <th>Last usage</th>
-              <th>Count</th>
-              <th>TTL</th>
-              <th>Size</th>
+              <th>URL{{ order|sort_icon:"url" }}</th>
+              <th>code{{ order|sort_icon:"status_code" }}</th>
+              <th>Last usage{{ order|sort_icon:"last_usage" }}</th>
+              <th>Count{{ order|sort_icon:"usage" }}</th>
+              <th>TTL{{ order|sort_icon:"ttl" }}</th>
+              <th>Size{{ order|sort_icon:"content_length" }}</th>
             </tr>
           </thead>
           <tbody>
