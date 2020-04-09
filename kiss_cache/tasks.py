@@ -173,3 +173,27 @@ def expire():
             LOG.info("* '%s'", res.url)
             res.delete()
     LOG.info("done")
+
+    LOG.info("Checking quota usage")
+    limit = settings.RESOURCE_QUOTA * settings.RESOURCE_QUOTA_AUTO_CLEAN / 100
+    if Resource.total_size() > limit:
+        LOG.info(
+            "* Cleaning by last usage (%s > %s)",
+            filesizeformat(Resource.total_size()),
+            filesizeformat(limit),
+        )
+        last_usage_limit = timezone.now() - timedelta(
+            seconds=settings.RESOURCE_QUOTA_AUTO_CLEAN_DELAY
+        )
+        while Resource.total_size() > limit:
+            try:
+                q = Resource.objects.filter(state=Resource.STATE_FINISHED)
+                q = q.filter(last_usage__lt=last_usage_limit)
+                res = q.order_by("last_usage")[0]
+                LOG.info("  - %s: '%s'", filesizeformat(res.content_length), res.url)
+                res.delete()
+            except IndexError:
+                LOG.info("* No more resources to clean")
+                break
+    LOG.info("* Usage: %s", filesizeformat(Resource.total_size()))
+    LOG.info("done")

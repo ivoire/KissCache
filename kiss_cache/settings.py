@@ -50,3 +50,8 @@ ALLOWED_NETWORKS = []
 
 # Default quota of 2G
 RESOURCE_QUOTA = 2 * 1024 * 1024 * 1024
+# Automatically remove old resources when the quota usage is above this value
+# (percent)
+RESOURCE_QUOTA_AUTO_CLEAN = 75
+# Only consider resources that where not used for N seconds
+RESOURCE_QUOTA_AUTO_CLEAN_DELAY = 3600
