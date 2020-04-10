@@ -18,7 +18,7 @@ def sort_icon(order, value):
     attribute = order[1:] if order[0] == "-" else order
     if attribute != value:
         return mark_safe(
-            f"""<a href="?order={value}"><i class="fas fa-sort-amount-up float-right"></i></a>"""
+            f"""<a href="?order={value}" class="disabled"><i class="fas fa-sort-amount-up-alt float-right"></i></a>"""
         )
 
     if order[0] == "-":
