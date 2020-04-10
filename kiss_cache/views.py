@@ -81,12 +81,18 @@ def statistics(request):
     failures = (
         query.filter(state=Resource.STATE_FINISHED).exclude(status_code=200).count()
     )
+
+    # Compute average usage
+    average_usage = "??"
+    with contextlib.suppress(ZeroDivisionError):
+        average_usage = round(Resource.total_usage() / (successes + failures))
+
     return render(
         request,
         "kiss_cache/statistics.html",
         {
             "total_size": size,
-            "average_usage": round(Resource.total_usage() / (successes + failures)),
+            "average_usage": average_usage,
             "quota": quota,
             "progress": progress,
             "progress_status": progress_status,
