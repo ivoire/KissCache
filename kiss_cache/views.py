@@ -92,9 +92,11 @@ def statistics(request):
             "scheduled_count": scheduled,
             "downloading_count": downloading,
             "successes_count": successes,
+            "successes_total_count": Statistic.successes(),
             "failures_count": failures,
-            "download": Statistic.objects.get(stat=Statistic.STAT_DOWNLOAD).value,
-            "upload": Statistic.objects.get(stat=Statistic.STAT_UPLOAD).value,
+            "failures_total_count": Statistic.failures(),
+            "download": Statistic.download(),
+            "upload": Statistic.upload(),
         },
     )
 

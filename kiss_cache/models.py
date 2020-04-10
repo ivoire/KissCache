@@ -13,6 +13,7 @@ import pathlib
 import time
 
 from django.db import models
+from django.db.models import F
 from django.db.models.aggregates import Sum
 from django.conf import settings
 
@@ -154,7 +155,34 @@ class Resource(models.Model):
 
 
 class Statistic(models.Model):
-    STAT_DOWNLOAD, STAT_UPLOAD = range(2)
-    STAT_CHOICES = ((STAT_DOWNLOAD, "Download"), (STAT_UPLOAD, "Upload"))
+    STAT_DOWNLOAD, STAT_UPLOAD, STAT_SUCCESSES, STAT_FAILURES = range(4)
+    STAT_CHOICES = (
+        (STAT_DOWNLOAD, "Download"),
+        (STAT_UPLOAD, "Upload"),
+        (STAT_SUCCESSES, "Successes"),
+        (STAT_FAILURES, "Failures"),
+    )
     stat = models.IntegerField(choices=STAT_CHOICES, primary_key=True)
     value = models.BigIntegerField(default=0)
+
+    @classmethod
+    def _accessor(cls, stat, value):
+        if value is None:
+            return Statistic.objects.get(stat=stat).value
+        Statistic.objects.filter(stat=stat).update(value=F("value") + value)
+
+    @classmethod
+    def download(cls, value=None):
+        return cls._accessor(Statistic.STAT_DOWNLOAD, value)
+
+    @classmethod
+    def upload(cls, value=None):
+        return cls._accessor(Statistic.STAT_UPLOAD, value)
+
+    @classmethod
+    def successes(cls, value=None):
+        return cls._accessor(Statistic.STAT_SUCCESSES, value)
+
+    @classmethod
+    def failures(cls, value=None):
+        return cls._accessor(Statistic.STAT_FAILURES, value)
