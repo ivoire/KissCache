@@ -7,12 +7,15 @@
 #
 # SPDX-License-Identifier: MIT
 
+from datetime import timedelta
 import logging
 import requests
 
+from django.utils import timezone
+
 from kiss_cache.__about__ import __version__
 from kiss_cache.models import Resource, Statistic
-from kiss_cache.tasks import fetch
+from kiss_cache.tasks import expire, fetch
 
 
 def test_fetch(caplog, db, mocker, settings, tmpdir):
@@ -243,4 +246,73 @@ def test_fetch_errors_3(caplog, db, mocker, settings, tmpdir):
     assert caplog.record_tuples == [
         ("kiss_cache.tasks", 20, "Fetching 'https://example.com'"),
         ("kiss_cache.tasks", 40, "'https://example.com' returned 404"),
+    ]
+
+
+def test_expire(caplog, db, mocker, settings, tmpdir):
+    now = timezone.now()
+    mocker.patch("django.utils.timezone.now", lambda: now)
+
+    caplog.set_level(logging.DEBUG)
+    settings.DOWNLOAD_PATH = str(tmpdir)
+    settings.RESOURCE_QUOTA = 60
+
+    res = Resource.objects.create(
+        url="https://example.com/rootfs.xz", content_length=10
+    )
+    res.created_at = now - timedelta(days=1, seconds=1)
+    res.save()
+
+    res = Resource.objects.create(
+        url="https://example.com/nfsrootfs.tar.gz",
+        content_length=10,
+        created_at=now - timedelta(days=1, seconds=1),
+        state=Resource.STATE_FINISHED,
+    )
+    res.created_at = now - timedelta(days=1, seconds=1)
+    res.save()
+
+    Resource.objects.create(
+        url="https://example.com/kernel",
+        content_length=20,
+        state=Resource.STATE_FINISHED,
+    )
+
+    Resource.objects.create(
+        url="https://example.com/ramdisk",
+        content_length=30,
+        state=Resource.STATE_FINISHED,
+        last_usage=now
+        - timedelta(seconds=settings.RESOURCE_QUOTA_AUTO_CLEAN_DELAY + 10),
+    )
+
+    Resource.objects.create(
+        url="https://example.com/rootfs.img.gz",
+        content_length=40,
+        state=Resource.STATE_FINISHED,
+    )
+
+    assert Resource.total_size() == 110
+    expire()
+
+    assert (
+        Resource.objects.filter(url="https://example.com/nfsrootfs.tar.gz").count() == 0
+    )
+    assert (
+        Resource.objects.filter(url="https://example.com/ramdisk").count() == 0
+    )
+    assert caplog.record_tuples == [
+        ("kiss_cache.tasks", 20, "Expiring resources"),
+        ("kiss_cache.tasks", 20, "* 'https://example.com/nfsrootfs.tar.gz'"),
+        ("kiss_cache.tasks", 20, "done"),
+        ("kiss_cache.tasks", 20, "Checking quota usage"),
+        (
+            "kiss_cache.tasks",
+            20,
+            "* Cleaning by last usage (100\xa0bytes > 45\xa0bytes)",
+        ),
+        ("kiss_cache.tasks", 20, "  - 30\xa0bytes: 'https://example.com/ramdisk'"),
+        ("kiss_cache.tasks", 20, "* No more resources to clean"),
+        ("kiss_cache.tasks", 20, "* Usage: 70\xa0bytes"),
+        ("kiss_cache.tasks", 20, "done"),
     ]
