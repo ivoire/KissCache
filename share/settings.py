@@ -50,5 +50,5 @@ if "SENTRY_DSN" in globals():
     sentry_sdk.init(
         dsn=globals()["SENTRY_DSN"],
         integrations=[DjangoIntegration()],
-        release=__version__,
+        release=f"kiss-cache@{__version__}",
     )
