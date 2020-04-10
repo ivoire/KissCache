@@ -10,6 +10,9 @@ then
 else
   set -x
 
+  # Default values
+  CI_REGISTRY_IMAGE=${CI_REGISTRY_IMAGE:-"hub.lavasoftware.org/ivoire/kisscache"}
+
   # Build the docker image
   VERSION=$(git describe)
   docker build -t $CI_REGISTRY_IMAGE:latest . --build-arg VERSION="$VERSION"
