@@ -100,8 +100,11 @@ def statistics(request):
 
 
 def resources(request, page=1, state="successes"):
+    # Default order
+    default_order = "url" if state in ["scheduled", "downloading"] else "-last_usage"
+
     # Sort order
-    order = request.GET.get("order", "-last_usage")
+    order = request.GET.get("order", default_order)
     attribute = order[1:] if order[0] == "-" else order
     if not hasattr(Resource, attribute):
         return HttpResponseBadRequest(f"Invalid sort order '{order}'")
@@ -141,6 +144,7 @@ def resources(request, page=1, state="successes"):
             "resources": page,
             "order": order,
             "order_reversed": order[0] == "-",
+            "default_order": default_order,
             "state": state,
             "url_name": "resources." + state,
             "scheduled_count": scheduled,

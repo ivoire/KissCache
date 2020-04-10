@@ -135,10 +135,10 @@
         </table>
         {% endif %}
         {% if resources.has_previous %}
-        <a href="{% url url_name resources.previous_page_number %}" class="btn btn-info"><i class="fas fa-backward"></i> Previous</a>
+        <a href="{% url url_name resources.previous_page_number %}{% if order != default_order %}?order={{ order }}{% endif %}" class="btn btn-info"><i class="fas fa-backward"></i> Previous</a>
         {% endif %}
         {% if resources.has_next %}
-        <a href="{% url url_name resources.next_page_number %}" class="btn btn-info float-right">Next <i class="fas fa-forward"></i></a>
+        <a href="{% url url_name resources.next_page_number %}{% if order != default_order %}?order={{ order }}{% endif %}" class="btn btn-info float-right">Next <i class="fas fa-forward"></i></a>
         {% endif %}
       </div>
     </div>
