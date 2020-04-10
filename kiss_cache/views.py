@@ -86,6 +86,7 @@ def statistics(request):
         "kiss_cache/statistics.html",
         {
             "total_size": size,
+            "average_usage": round(Resource.total_usage() / (successes + failures)),
             "quota": quota,
             "progress": progress,
             "progress_status": progress_status,

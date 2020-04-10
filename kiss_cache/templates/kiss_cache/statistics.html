@@ -18,8 +18,10 @@
     {% endif %}
 
     <h2>Network usage</h2>
-    <p>KissCache has downloaded <span class="badge badge-pill badge-info" title="{{ download }}">{{ download|filesizeformat }}</span> and served <span class="badge badge-pill badge-success" title="{{ upload }}">{{ upload|filesizeformat }}</span>.</p>
+    <p>KissCache has downloaded <span class="badge badge-pill badge-info" title="{{ download }}">{{ download|filesizeformat }}</span> and served <span class="badge badge-pill badge-success" title="{{ upload }}">{{ upload|filesizeformat }}</span> for an expansion ratio of <span class="badge badge-pill badge-dark">{% widthratio upload download 1 %}&times;</span>.</p>
+
     <h2>Resources</h2>
+    <p>On average, resources are currently used <span class="badge badge-pill badge-success">{{ average_usage }}&times;</span>.
     <table class="table table-striped">
       <thead class="thead-light">
         <tr>

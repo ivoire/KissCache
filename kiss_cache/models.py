@@ -73,9 +73,12 @@ class Resource(models.Model):
     def total_size(cls):
         """ Compute the sum of the size of all Resources """
         size = cls.objects.aggregate(size=Sum("content_length"))["size"]
-        if size is None:
-            size = 0
-        return size
+        return 0 if size is None else size
+
+    @classmethod
+    def total_usage(cls):
+        usage = cls.objects.aggregate(usage=Sum("usage"))["usage"]
+        return 0 if usage is None else usage
 
     @classmethod
     def is_over_quota(cls):
