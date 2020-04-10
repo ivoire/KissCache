@@ -18,7 +18,6 @@ import time
 from celery import shared_task
 from celery.utils.log import get_task_logger
 
-from django.db.models import F
 from django.conf import settings
 from django.template.defaultfilters import filesizeformat
 from django.utils import timezone
@@ -55,6 +54,7 @@ def fetch(url):
         Resource.objects.filter(pk=res.pk).update(
             state=Resource.STATE_FINISHED, status_code=500
         )
+        Statistic.failures(1)
         return
 
     # Download the resource
@@ -74,12 +74,14 @@ def fetch(url):
         Resource.objects.filter(pk=res.pk).update(
             state=Resource.STATE_FINISHED, status_code=502
         )
+        Statistic.failures(1)
         return
 
     # Update the status code
     Resource.objects.filter(pk=res.pk).update(status_code=req.status_code)
     if req.status_code != 200:
         Resource.objects.filter(pk=res.pk).update(state=Resource.STATE_FINISHED)
+        Statistic.failures(1)
         LOG.error("'%s' returned %d", url, req.status_code)
         req.close()
         return
@@ -141,6 +143,7 @@ def fetch(url):
         Resource.objects.filter(pk=res.pk).update(
             state=Resource.STATE_FINISHED, status_code=504
         )
+        Statistic.failures(1)
         # TODO: remove the file
         return
 
@@ -157,9 +160,8 @@ def fetch(url):
         Resource.objects.filter(pk=res.pk).update(content_length=size)
 
     # Update the statistics
-    Statistic.objects.filter(stat=Statistic.STAT_DOWNLOAD).update(
-        value=F("value") + size
-    )
+    Statistic.download(size)
+    Statistic.successes(1)
 
     # Mark the task as done
     Resource.objects.filter(pk=res.pk).update(state=Resource.STATE_FINISHED)
