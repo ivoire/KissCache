@@ -107,7 +107,7 @@ def test_resource_stream_errors(db, monkeypatch, settings, tmpdir):
     monkeypatch.setattr(time, "sleep", lambda d: d)
 
     settings.DOWNLOAD_PATH = str(tmpdir)
-    res = Resource.objects.create(url="https://example.com/kernel")
+    res = Resource.objects.create(url="https://example.com/kernel", content_length=11)
     (tmpdir / "76").mkdir()
     with (
         tmpdir / "76/66828e5a43fe3e8c06c2e62ad216cc354c91da92f093d6d8a7c3dc9d1baa82"
@@ -132,6 +132,31 @@ def test_resource_stream_errors_2(db, monkeypatch, settings, tmpdir):
     monkeypatch.setattr(time, "sleep", lambda d: d)
 
     settings.DOWNLOAD_PATH = str(tmpdir)
+    res = Resource.objects.create(url="https://example.com/kernel", content_length=13)
+    (tmpdir / "76").mkdir()
+    with (
+        tmpdir / "76/66828e5a43fe3e8c06c2e62ad216cc354c91da92f093d6d8a7c3dc9d1baa82"
+    ).open("wb") as f_out:
+        f_out.write(b"hello")
+        f_out.flush()
+        it = res.stream()
+        assert next(it) == b"hello"
+        f_out.write(b" world")
+        f_out.flush()
+        assert next(it) == b" world"
+
+        res.status_code = 403
+        res.state = Resource.STATE_FINISHED
+        res.save()
+    # The length is wrong: an exception should be raised
+    with pytest.raises(Exception, match="Resource length streamed is wrong: 11 vs 13"):
+        next(it)
+
+
+def test_resource_stream_errors_3(db, monkeypatch, settings, tmpdir):
+    monkeypatch.setattr(time, "sleep", lambda d: d)
+
+    settings.DOWNLOAD_PATH = str(tmpdir)
     res = Resource.objects.create(url="https://example.com/kernel")
     (tmpdir / "76").mkdir()
     with (
@@ -146,5 +171,54 @@ def test_resource_stream_errors_2(db, monkeypatch, settings, tmpdir):
         assert next(it) == b" world"
 
         res.delete()
+    # the length is unknown: an exception should be raised
     with pytest.raises(Exception, match="Resource was deleted and length is unknow"):
+        next(it)
+
+
+def test_resource_stream_errors_4(db, monkeypatch, settings, tmpdir):
+    monkeypatch.setattr(time, "sleep", lambda d: d)
+
+    settings.DOWNLOAD_PATH = str(tmpdir)
+    res = Resource.objects.create(url="https://example.com/kernel", content_length=13)
+    (tmpdir / "76").mkdir()
+    with (
+        tmpdir / "76/66828e5a43fe3e8c06c2e62ad216cc354c91da92f093d6d8a7c3dc9d1baa82"
+    ).open("wb") as f_out:
+        f_out.write(b"hello")
+        f_out.flush()
+        it = res.stream()
+        assert next(it) == b"hello"
+        f_out.write(b" world")
+        f_out.flush()
+        assert next(it) == b" world"
+
+        res.delete()
+    # the length is unknown: an exception should be raised
+    with pytest.raises(
+        Exception, match="Resource was deleted and streamed length is wrong: 11 vs 13"
+    ):
+        next(it)
+
+
+def test_resource_stream_errors_5(db, monkeypatch, settings, tmpdir):
+    monkeypatch.setattr(time, "sleep", lambda d: d)
+
+    settings.DOWNLOAD_PATH = str(tmpdir)
+    res = Resource.objects.create(url="https://example.com/kernel", content_length=11)
+    (tmpdir / "76").mkdir()
+    with (
+        tmpdir / "76/66828e5a43fe3e8c06c2e62ad216cc354c91da92f093d6d8a7c3dc9d1baa82"
+    ).open("wb") as f_out:
+        f_out.write(b"hello")
+        f_out.flush()
+        it = res.stream()
+        assert next(it) == b"hello"
+        f_out.write(b" world")
+        f_out.flush()
+        assert next(it) == b" world"
+
+        res.delete()
+    # the length is good: no exception should be raised
+    with pytest.raises(StopIteration):
         next(it)

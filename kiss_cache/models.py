@@ -138,14 +138,19 @@ class Resource(models.Model):
                 yield data
                 data = f_in.read()
 
-            # If the Resource has been deleted, we should check that the length
-            # is right.
-            if deleted:
-                if self.content_length:
-                    if current_length != self.content_length:
-                        raise Exception("Resource was deleted and length is wrong")
-                else:
-                    raise Exception("Resource was deleted and length is unknow")
+            # Check the length of the content
+            if self.content_length:
+                if current_length != self.content_length:
+                    if deleted:
+                        raise Exception(
+                            f"Resource was deleted and streamed length is wrong: {current_length} vs {self.content_length}"
+                        )
+                    else:
+                        raise Exception(
+                            f"Resource length streamed is wrong: {current_length} vs {self.content_length}"
+                        )
+            elif deleted:
+                raise Exception("Resource was deleted and length is unknow")
 
 
 class Statistic(models.Model):
