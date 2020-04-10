@@ -238,7 +238,7 @@ def api_fetch(request, filename=None):
         if res.content_type:
             response["Content-Type"] = res.content_type
         if filename:
-            response["Content-Disposition"] = "attachment; filename=%s" % filename
+            response["Content-Disposition"] = f"attachment; filename={filename}"
         return response
     elif res.state == Resource.STATE_FINISHED:
         # Check the status code
@@ -250,7 +250,7 @@ def api_fetch(request, filename=None):
         if res.content_type:
             response["Content-Type"] = res.content_type
         if filename:
-            response["Content-Disposition"] = "attachment; filename=%s" % filename
+            response["Content-Disposition"] = f"attachment; filename={filename}"
         return response
     else:
         raise NotImplementedError("new state value?")

@@ -187,6 +187,12 @@ def test_resources(client, db):
     assert ret.context["successes_count"] == 1
     assert ret.context["failures_count"] == 1
 
+    # Test errors
+    ret = client.get(reverse("resources.failures") + "?order=-usag")
+    assert ret.status_code == 400
+    ret = client.get(reverse("resources.failures") + "10/")
+    assert ret.status_code == 404
+
 
 def test_api_health(client, mocker, settings, tmpdir):
     settings.SHUTDOWN_PATH = str(tmpdir / "shutdown")
@@ -256,6 +262,26 @@ def test_api_fetch(client, db, mocker, settings, tmpdir):
     assert next(ret.streaming_content) == b"Hello world!"
     assert Resource.objects.get(url=URL).ttl == 345_600
 
+    # Download a forth time: set the Content-Disposition
+    ret = client.get(f"{reverse('api.fetch')}kernel?url={URL}")
+    assert isinstance(ret, FileResponse)
+    assert ret._closable_objects[0].name == str(
+        tmpdir / "10/0680ad546ce6a577f42f52df33b4cfdca756859e664b8d7de329b150d09ce9"
+    )
+    assert ret.status_code == 200
+    assert ret._headers["content-type"] == ("Content-Type", "text/html; charset=UTF-8")
+    assert ret._headers["content-length"] == ("Content-Length", "12")
+    assert ret._headers["content-disposition"] == (
+        "Content-Disposition",
+        "attachment; filename=kernel",
+    )
+    assert next(ret.streaming_content) == b"Hello world!"
+
+    # Download a fifth time with status_code = 404
+    Resource.objects.filter(url=URL).update(status_code=404)
+    ret = client.get(f"{reverse('api.fetch')}?url={URL}")
+    assert ret.status_code == 404
+
 
 def test_api_fetch_streaming(client, db, mocker, settings, tmpdir):
     URL = "https://example.com"
@@ -281,11 +307,15 @@ def test_api_fetch_streaming(client, db, mocker, settings, tmpdir):
 
     fetch = mocker.patch("kiss_cache.tasks.fetch.delay", mocked_fetch)
 
-    ret = client.get(f"{reverse('api.fetch')}?url={URL}&ttl=42d")
+    ret = client.get(f"{reverse('api.fetch')}ramdisk.tgz?url={URL}&ttl=42d")
     assert isinstance(ret, StreamingHttpResponse)
     assert ret.status_code == 200
     assert ret._headers["content-type"] == ("Content-Type", "text/html; charset=UTF-8")
     assert ret._headers["content-length"] == ("Content-Length", "12")
+    assert ret._headers["content-disposition"] == (
+        "Content-Disposition",
+        "attachment; filename=ramdisk.tgz",
+    )
     assert next(ret.streaming_content) == b"Hello world!"
 
 
