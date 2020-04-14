@@ -81,7 +81,7 @@ def test_statistics(client, db, settings):
     assert ret.templates[1].name == "kiss_cache/base.html"
     assert ret.context["total_size"] == 666 * MEGA
     assert ret.context["quota"] == settings.RESOURCE_QUOTA
-    assert ret.context["progress"] == 32
+    assert ret.context["progress"] == 33
     assert ret.context["progress_status"] == "success"
     assert ret.context["scheduled_count"] == 1
     assert ret.context["downloading_count"] == 1

@@ -65,7 +65,7 @@ def statistics(request):
     quota = settings.RESOURCE_QUOTA
     progress = 0
     with contextlib.suppress(Exception):
-        progress = int(size / quota * 100)
+        progress = round(size / quota * 100)
     if progress >= 85:
         progress_status = "danger"
     elif progress >= 60:
@@ -74,7 +74,7 @@ def statistics(request):
         progress_status = "success"
 
     # Count the resources
-    query = Resource.objects.order_by("url")
+    query = Resource.objects.all()
     scheduled = query.filter(state=Resource.STATE_SCHEDULED).count()
     downloading = query.filter(state=Resource.STATE_DOWNLOADING).count()
     successes = query.filter(state=Resource.STATE_FINISHED, status_code=200).count()
