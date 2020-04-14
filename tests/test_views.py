@@ -7,7 +7,9 @@
 #
 # SPDX-License-Identifier: MIT
 
-from django.http import FileResponse
+import json
+
+from django.http import FileResponse, JsonResponse
 from django.http.response import StreamingHttpResponse
 from django.urls import reverse
 from django.utils import timezone
@@ -334,3 +336,25 @@ def test_api_fetch_errors(client, db, mocker):
     mocker.patch("kiss_cache.models.Resource.is_over_quota", lambda: True)
     ret = client.get(f"{reverse('api.fetch')}?url={URL}")
     assert ret.status_code == 507
+
+
+def test_api_status(client, db):
+    ret = client.get(reverse("api.status"))
+    assert ret.status_code == 200
+    assert isinstance(ret, JsonResponse)
+    assert json.loads(ret.content) == {
+        "disk_usage": 0,
+        "disk_usage_percent": 0,
+        "disk_quota": 2_147_483_648,
+        "instance": "http://testserver/",
+        "resources_scheduled": 0,
+        "resources_downloading": 0,
+        "resources_successes": 0,
+        "resources_successes_total": 0,
+        "resources_failures": 0,
+        "resources_failures_total": 0,
+        "download": 0,
+        "upload": 0,
+        "usage": 0,
+        "version": __version__,
+    }

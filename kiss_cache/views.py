@@ -22,6 +22,7 @@ from django.http import (
     Http404,
     HttpResponse,
     HttpResponseBadRequest,
+    JsonResponse,
     StreamingHttpResponse,
 )
 from django.shortcuts import render
@@ -261,3 +262,38 @@ def api_fetch(request, filename=None):
         return response
     else:
         raise NotImplementedError("new state value?")
+
+
+@require_safe
+def api_status(request):
+    disk_usage = Resource.total_size()
+    disk_quota = settings.RESOURCE_QUOTA
+    disk_usage_percent = round(disk_usage / disk_quota * 100)
+
+    # Count the resources
+    query = Resource.objects.all()
+    scheduled = query.filter(state=Resource.STATE_SCHEDULED).count()
+    downloading = query.filter(state=Resource.STATE_DOWNLOADING).count()
+    successes = query.filter(state=Resource.STATE_FINISHED, status_code=200).count()
+    failures = (
+        query.filter(state=Resource.STATE_FINISHED).exclude(status_code=200).count()
+    )
+
+    return JsonResponse(
+        {
+            "disk_usage": disk_usage,
+            "disk_usage_percent": disk_usage_percent,
+            "disk_quota": disk_quota,
+            "instance": request.build_absolute_uri("/"),
+            "resources_scheduled": scheduled,
+            "resources_downloading": downloading,
+            "resources_successes": successes,
+            "resources_successes_total": successes,
+            "resources_failures": failures,
+            "resources_failures_total": failures,
+            "download": Statistic.download(),
+            "upload": Statistic.upload(),
+            "usage": Resource.total_usage(),
+            "version": __version__,
+        }
+    )
