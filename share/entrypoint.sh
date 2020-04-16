@@ -106,5 +106,8 @@ then
   echo "done"
   echo ""
 
-  exec gunicorn3 --log-level debug --bind 0.0.0.0:80 --threads 10 --workers 4 --worker-tmp-dir /dev/shm website.wsgi
+  GUNICORN_THREADS=${GUNICORN_THREADS:-10}
+  GUNICORN_WORKERS=${GUNICORN_WORKERS:-4}
+  echo "Statrting gunicorn with workers=$GUNICORN_WORKERS and threads=$GUNICORN_THREADS"
+  exec gunicorn3 --log-level debug --bind 0.0.0.0:80 --threads "$GUNICORN_THREADS" --workers "$GUNICORN_WORKERS" --worker-tmp-dir /dev/shm website.wsgi
 fi
