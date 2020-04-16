@@ -17,11 +17,7 @@ class ResourceAdmin(admin.ModelAdmin):
     list_display = ("url", "path", "state", "status_code", "ttl", "usage")
     list_filter = ("state", "ttl")
     ordering = ["url"]
-
-    def get_readonly_fields(self, _, obj=None):
-        if obj:
-            return self.readonly_fields + ("path", "url")
-        return self.readonly_fields
+    readonly_fields = ("created_at", "path", "url")
 
 
 class StatisticAdmin(admin.ModelAdmin):
