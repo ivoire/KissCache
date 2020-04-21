@@ -283,6 +283,7 @@ def api_status(request):
 
     return JsonResponse(
         {
+            "timestamp": timezone.now(),
             "disk_usage": disk_usage,
             "disk_usage_percent": disk_usage_percent,
             "disk_quota": disk_quota,
