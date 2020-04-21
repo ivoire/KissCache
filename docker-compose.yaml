@@ -12,10 +12,12 @@ services:
   celery-beat:
     image: ${KC_IMAGE}
     user: kiss-cache
-    environment:
-      SERVICE: celery-beat
     depends_on:
     - redis
+    environment:
+      SERVICE: celery-beat
+    volumes:
+    - ./share/kiss-cache.yaml:/etc/kiss-cache.yaml
     restart: unless-stopped
 
   celery-worker:
