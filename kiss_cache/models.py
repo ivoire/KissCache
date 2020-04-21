@@ -158,12 +158,13 @@ class Resource(models.Model):
 
 
 class Statistic(models.Model):
-    STAT_DOWNLOAD, STAT_UPLOAD, STAT_SUCCESSES, STAT_FAILURES = range(4)
+    STAT_DOWNLOAD, STAT_UPLOAD, STAT_SUCCESSES, STAT_FAILURES, STAT_REQUESTS = range(5)
     STAT_CHOICES = (
         (STAT_DOWNLOAD, "Download"),
         (STAT_UPLOAD, "Upload"),
         (STAT_SUCCESSES, "Successes"),
         (STAT_FAILURES, "Failures"),
+        (STAT_REQUESTS, "Requests"),
     )
     stat = models.IntegerField(choices=STAT_CHOICES, primary_key=True)
     value = models.BigIntegerField(default=0)
@@ -189,3 +190,7 @@ class Statistic(models.Model):
     @classmethod
     def failures(cls, value=None):
         return cls._accessor(Statistic.STAT_FAILURES, value)
+
+    @classmethod
+    def requests(cls, value=None):
+        return cls._accessor(Statistic.STAT_REQUESTS, value)

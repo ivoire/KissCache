@@ -235,8 +235,10 @@ def api_fetch(request, filename=None):
 
     # Update the statistics (only for GET has with HEAD, django will just
     # return headers, not the body)
-    if request.method == "GET" and res.content_length:
-        Statistic.upload(res.content_length)
+    if request.method == "GET":
+        Statistic.requests(1)
+        if res.content_length:
+            Statistic.upload(res.content_length)
 
     # The task has been started.
     if res.state == Resource.STATE_DOWNLOADING:
