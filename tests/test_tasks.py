@@ -298,9 +298,7 @@ def test_expire(caplog, db, mocker, settings, tmpdir):
     assert (
         Resource.objects.filter(url="https://example.com/nfsrootfs.tar.gz").count() == 0
     )
-    assert (
-        Resource.objects.filter(url="https://example.com/ramdisk").count() == 0
-    )
+    assert Resource.objects.filter(url="https://example.com/ramdisk").count() == 0
     assert caplog.record_tuples == [
         ("kiss_cache.tasks", 20, "Expiring resources"),
         ("kiss_cache.tasks", 20, "* 'https://example.com/nfsrootfs.tar.gz'"),

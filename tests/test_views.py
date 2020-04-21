@@ -52,8 +52,9 @@ def test_statistics(client, db, settings):
     assert ret.context["downloading_count"] == 0
     assert ret.context["successes_count"] == 0
     assert ret.context["failures_count"] == 0
-    assert ret.context["download"] == 0
-    assert ret.context["upload"] == 0
+    assert ret.context["statistics_download"] == 0
+    assert ret.context["statistics_upload"] == 0
+    assert ret.context["statistics_requests"] == 0
 
     # Create some resources
     MEGA = 1024 * 1024
@@ -89,8 +90,9 @@ def test_statistics(client, db, settings):
     assert ret.context["downloading_count"] == 1
     assert ret.context["successes_count"] == 1
     assert ret.context["failures_count"] == 1
-    assert ret.context["download"] == 666 * MEGA
-    assert ret.context["upload"] == 2 * 666 * MEGA
+    assert ret.context["statistics_download"] == 666 * MEGA
+    assert ret.context["statistics_upload"] == 2 * 666 * MEGA
+    assert ret.context["statistics_requests"] == 0
 
 
 def test_resources(client, db):
@@ -342,19 +344,20 @@ def test_api_status(client, db):
     ret = client.get(reverse("api.status"))
     assert ret.status_code == 200
     assert isinstance(ret, JsonResponse)
-    assert json.loads(ret.content) == {
-        "disk_usage": 0,
-        "disk_usage_percent": 0,
-        "disk_quota": 2_147_483_648,
-        "instance": "http://testserver/",
-        "resources_scheduled": 0,
-        "resources_downloading": 0,
-        "resources_successes": 0,
-        "resources_successes_total": 0,
-        "resources_failures": 0,
-        "resources_failures_total": 0,
-        "download": 0,
-        "upload": 0,
-        "usage": 0,
-        "version": __version__,
-    }
+    data = json.loads(ret.content)
+    assert data["disk_usage"] == 0
+    assert data["disk_usage_percent"] == 0
+    assert data["disk_quota"] == 2_147_483_648
+    assert data["instance"] == "http://testserver/"
+    assert data["resources_scheduled"] == 0
+    assert data["resources_downloading"] == 0
+    assert data["resources_successes"] == 0
+    assert data["resources_failures"] == 0
+    assert data["resources_usage"] == 0
+    assert data["statistics_successes"] == 0
+    assert data["statistics_failures"] == 0
+    assert data["statistics_download"] == 0
+    assert data["statistics_upload"] == 0
+    assert data["statistics_requests"] == 0
+    assert data["version"] == __version__
+    assert "timestamp" in data
