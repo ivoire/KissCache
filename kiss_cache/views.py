@@ -103,8 +103,9 @@ def statistics(request):
             "successes_total_count": Statistic.successes(),
             "failures_count": failures,
             "failures_total_count": Statistic.failures(),
-            "download": Statistic.download(),
-            "upload": Statistic.upload(),
+            "statistics_download": Statistic.download(),
+            "statistics_upload": Statistic.upload(),
+            "statistics_requests": Statistic.requests(),
         },
     )
 
@@ -291,12 +292,13 @@ def api_status(request):
             "resources_scheduled": scheduled,
             "resources_downloading": downloading,
             "resources_successes": successes,
-            "resources_successes_total": successes,
             "resources_failures": failures,
-            "resources_failures_total": failures,
-            "download": Statistic.download(),
-            "upload": Statistic.upload(),
-            "usage": Resource.total_usage(),
+            "resources_usage": Resource.total_usage(),
+            "statistics_successes": Statistic.successes(),
+            "statistics_failures": Statistic.failures(),
+            "statistics_download": Statistic.download(),
+            "statistics_upload": Statistic.upload(),
+            "statistics_requests": Statistic.requests(),
             "version": __version__,
         }
     )
