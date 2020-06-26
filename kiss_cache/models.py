@@ -63,7 +63,7 @@ class Resource(models.Model):
         elif val.endswith("s"):
             ttl = int(val[:-1])
         else:
-            raise NotImplementedError("Unknow TTL value")
+            raise NotImplementedError("Unknown TTL value")
 
         if ttl <= 0:
             raise Exception("The TTL should be positive")
@@ -154,7 +154,7 @@ class Resource(models.Model):
                             f"Resource length streamed is wrong: {current_length} vs {self.content_length}"
                         )
             elif deleted:
-                raise Exception("Resource was deleted and length is unknow")
+                raise Exception("Resource was deleted and length is unknown")
 
 
 class Statistic(models.Model):

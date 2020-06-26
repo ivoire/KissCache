@@ -59,7 +59,7 @@ def fetch(url):
 
     # Download the resource
     # * stream back the result
-    # * only accept plain content (not gziped) so Content-Length is known
+    # * only accept plain content (not gzipped) so Content-Length is known
     # * with a timeout
     try:
         req = requests_retry().get(
