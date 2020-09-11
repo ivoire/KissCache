@@ -6,7 +6,7 @@ ENV DEBIAN_FRONTEND noninteractive
 
 # Install dependencies
 RUN apt-get update -q && \
-    apt-get install --no-install-recommends --yes gunicorn python3 python3-celery python3-django python3-django-auth-ldap python3-pip python3-psycopg2 python3-redis python3-requests python3-whitenoise python3-yaml && \
+    apt-get install --no-install-recommends --yes gunicorn python3 python3-celery python3-django python3-django-auth-ldap python3-eventlet python3-pip python3-psycopg2 python3-redis python3-requests python3-whitenoise python3-yaml && \
     apt-get install --no-install-recommends --yes libjs-jquery && \
     python3 -m pip install sentry-sdk && \
     # Cleanup
