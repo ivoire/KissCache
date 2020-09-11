@@ -190,7 +190,7 @@ def test_fetch_errors_2(caplog, db, mocker, settings, tmpdir):
                 "User-Agent": f"KissCache/{__version__}",
             }
             assert timeout == settings.DOWNLOAD_TIMEOUT
-            raise requests.RequestException("Unable to donwload 'https://example.com'")
+            raise requests.RequestException("Unable to download 'https://example.com'")
 
     def requests_retry():
         return RequestRetry()
@@ -205,7 +205,7 @@ def test_fetch_errors_2(caplog, db, mocker, settings, tmpdir):
     assert caplog.record_tuples == [
         ("kiss_cache.tasks", 20, "Fetching 'https://example.com'"),
         ("kiss_cache.tasks", 40, "Unable to connect to 'https://example.com'"),
-        ("kiss_cache.tasks", 40, "Unable to donwload 'https://example.com'"),
+        ("kiss_cache.tasks", 40, "Unable to download 'https://example.com'"),
     ]
 
 

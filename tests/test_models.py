@@ -21,7 +21,7 @@ def test_resource_parse_ttl():
     assert Resource.parse_ttl("500s") == 500
     assert Resource.parse_ttl("42s") == 42
 
-    with pytest.raises(NotImplementedError, match="Unknow TTL value"):
+    with pytest.raises(NotImplementedError, match="Unknown TTL value"):
         Resource.parse_ttl("42t")
     with pytest.raises(Exception, match="The TTL should be positive"):
         Resource.parse_ttl("-1s")
@@ -172,7 +172,7 @@ def test_resource_stream_errors_3(db, monkeypatch, settings, tmpdir):
 
         res.delete()
     # the length is unknown: an exception should be raised
-    with pytest.raises(Exception, match="Resource was deleted and length is unknow"):
+    with pytest.raises(Exception, match="Resource was deleted and length is unknown"):
         next(it)
 
 
