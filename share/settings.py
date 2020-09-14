@@ -45,10 +45,11 @@ with contextlib.suppress(FileNotFoundError):
 # Add sentry if SENTRY_DSN is defined
 if "SENTRY_DSN" in globals():
     import sentry_sdk
+    from sentry_sdk.integrations.celery import CeleryIntegration
     from sentry_sdk.integrations.django import DjangoIntegration
 
     sentry_sdk.init(
         dsn=globals()["SENTRY_DSN"],
-        integrations=[DjangoIntegration()],
+        integrations=[CeleryIntegration(), DjangoIntegration()],
         release=f"kiss-cache@{__version__}",
     )
