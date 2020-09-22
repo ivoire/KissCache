@@ -14,6 +14,8 @@ else
   CI_REGISTRY_IMAGE=${CI_REGISTRY_IMAGE:-"hub.lavasoftware.org/ivoire/kisscache"}
 
   # Build the docker image
+  # Unshallow the git repository to allow git describe to work
+  git fetch --unshallow
   VERSION=$(git describe)
   docker build -t $CI_REGISTRY_IMAGE:latest . --build-arg VERSION="$VERSION"
 
