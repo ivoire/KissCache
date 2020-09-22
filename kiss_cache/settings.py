@@ -48,8 +48,8 @@ CELERY_BEAT_MAX_LOOP_INTERVAL = 30 * 60
 # By default the instance is fully open
 ALLOWED_NETWORKS = []
 
-# Default quota of 2G
-RESOURCE_QUOTA = 2 * 1024 * 1024 * 1024
+# Default quota of 5G
+RESOURCE_QUOTA = 5 * 1024 * 1024 * 1024
 # Automatically remove old resources when the quota usage is above this value
 # (percent)
 RESOURCE_QUOTA_AUTO_CLEAN = 75
