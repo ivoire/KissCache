@@ -84,7 +84,7 @@ def test_statistics(client, db, settings):
     assert ret.templates[1].name == "kiss_cache/base.html"
     assert ret.context["total_size"] == 666 * MEGA
     assert ret.context["quota"] == settings.RESOURCE_QUOTA
-    assert ret.context["progress"] == 33
+    assert ret.context["progress"] == 13
     assert ret.context["progress_status"] == "success"
     assert ret.context["scheduled_count"] == 1
     assert ret.context["downloading_count"] == 1
@@ -347,7 +347,7 @@ def test_api_status(client, db):
     data = json.loads(ret.content)
     assert data["disk_usage"] == 0
     assert data["disk_usage_percent"] == 0
-    assert data["disk_quota"] == 2_147_483_648
+    assert data["disk_quota"] == 5_368_709_120
     assert data["instance"] == "http://testserver/"
     assert data["resources_scheduled"] == 0
     assert data["resources_downloading"] == 0
