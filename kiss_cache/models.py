@@ -23,7 +23,7 @@ class Resource(models.Model):
     url = models.URLField(unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     ttl = models.IntegerField(default=60 * 60 * 24)
-    content_length = models.IntegerField(blank=True, null=True)
+    content_length = models.BigIntegerField(blank=True, null=True)
     content_type = models.CharField(max_length=256, blank=True)
     last_usage = models.DateTimeField(blank=True, null=True)
     usage = models.IntegerField(default=0)
