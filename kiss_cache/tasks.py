@@ -147,6 +147,16 @@ def fetch(url):
         # TODO: remove the file
         return
 
+    except Exception as exc:
+        LOG.error("Unable to fetch '%s'", url)
+        LOG.exception(exc)
+        Resource.objects.filter(pk=res.pk).update(
+            state=Resource.STATE_FINISHED, status_code=504
+        )
+        Statistic.failures(1)
+        # TODO: remove the file
+        return
+
     # Check or save the size
     if res.content_length:
         if res.content_length != size:
