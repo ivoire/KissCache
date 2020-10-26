@@ -1,14 +1,17 @@
-FROM debian:bullseye-slim
+FROM debian:buster-slim
 
 LABEL maintainer="Rémi Duraffort <remi.duraffort@linaro.org>"
 
 ENV DEBIAN_FRONTEND noninteractive
 
 # Install dependencies
-RUN apt-get update -q && \
-    apt-get install --no-install-recommends --yes gunicorn python3 python3-celery python3-django python3-django-auth-ldap python3-eventlet python3-pip python3-psycopg2 python3-redis python3-requests python3-whitenoise python3-yaml && \
+RUN echo 'deb http://deb.debian.org/debian buster-backports main' > /etc/apt/sources.list.d/backports.list && \
+    mkdir -p /usr/share/man/man1 /usr/share/man/man7 && \
+    apt-get update -q && \
+    apt-get install --no-install-recommends --yes -t buster-backports python3-django && \
+    apt-get install --no-install-recommends --yes gunicorn3 python3-celery python3-django-auth-ldap python3-eventlet python3-pip python3-psycopg2 python3-redis python3-requests python3-whitenoise python3-yaml && \
     apt-get install --no-install-recommends --yes libjs-jquery && \
-    python3 -m pip install --upgrade sentry-sdk==0.17.6 eventlet==0.27.0 && \
+    python3 -m pip install --upgrade sentry-sdk==0.17.6 && \
     # Cleanup
     apt-get clean && \
     find /usr/lib/python3/dist-packages/ -name '__pycache__' -type d -exec rm -r "{}" + && \
