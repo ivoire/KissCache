@@ -15,7 +15,7 @@ else
 
   # Build the docker image
   # Unshallow the git repository to allow git describe to work
-  git fetch --unshallow
+  git fetch --unshallow || true
   VERSION=$(git describe)
   docker build -t $CI_REGISTRY_IMAGE:latest . --build-arg VERSION="$VERSION"
 
