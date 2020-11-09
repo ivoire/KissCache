@@ -258,7 +258,7 @@ def test_expire(caplog, db, mocker, settings, tmpdir):
     settings.RESOURCE_QUOTA = 60
 
     res = Resource.objects.create(
-        url="https://example.com/rootfs.xz", content_length=10
+        url="https://example.com/rootfs.xz", content_length=10, status_code=200
     )
     res.created_at = now - timedelta(days=1, seconds=1)
     res.save()
@@ -268,6 +268,7 @@ def test_expire(caplog, db, mocker, settings, tmpdir):
         content_length=10,
         created_at=now - timedelta(days=1, seconds=1),
         state=Resource.STATE_FINISHED,
+        status_code=200,
     )
     res.created_at = now - timedelta(days=1, seconds=1)
     res.save()
@@ -276,6 +277,7 @@ def test_expire(caplog, db, mocker, settings, tmpdir):
         url="https://example.com/kernel",
         content_length=20,
         state=Resource.STATE_FINISHED,
+        status_code=200,
     )
 
     Resource.objects.create(
@@ -284,15 +286,25 @@ def test_expire(caplog, db, mocker, settings, tmpdir):
         state=Resource.STATE_FINISHED,
         last_usage=now
         - timedelta(seconds=settings.RESOURCE_QUOTA_AUTO_CLEAN_DELAY + 10),
+        status_code=200,
     )
 
     Resource.objects.create(
         url="https://example.com/rootfs.img.gz",
         content_length=40,
         state=Resource.STATE_FINISHED,
+        status_code=200,
     )
 
-    assert Resource.total_size() == 110
+    # A failed resource to drop
+    Resource.objects.create(
+        url="https://example.com/rootfs.img.bz2",
+        content_length=40,
+        state=Resource.STATE_FINISHED,
+        status_code=404,
+    )
+
+    assert Resource.total_size() == 150
     expire()
 
     assert (
@@ -300,6 +312,8 @@ def test_expire(caplog, db, mocker, settings, tmpdir):
     )
     assert Resource.objects.filter(url="https://example.com/ramdisk").count() == 0
     assert caplog.record_tuples == [
+        ("kiss_cache.tasks", 20, "Removing failed resources"),
+        ("kiss_cache.tasks", 20, "* 'https://example.com/rootfs.img.bz2'"),
         ("kiss_cache.tasks", 20, "Expiring resources"),
         ("kiss_cache.tasks", 20, "* 'https://example.com/nfsrootfs.tar.gz'"),
         ("kiss_cache.tasks", 20, "done"),
