@@ -37,8 +37,20 @@ services:
     image: ${KC_REDIS_IMAGE}
     restart: unless-stopped
 
+  apache2:
+    image: ${KC_IMAGE}
+    volumes:
+    - cache:/var/cache/kiss-cache/
+    - ./share/kiss-cache.conf:/etc/apache2/sites-enabled/kiss-cache.conf:ro
+    depends_on:
+    - web
+    environment:
+      SERVICE: apache
+    ports:
+    - "${KC_FRONT_PORT}:80"
+    restart: unless-stopped
+
   web:
-    build: .
     image: ${KC_IMAGE}
     volumes:
     - cache:/var/cache/kiss-cache/
@@ -48,8 +60,6 @@ services:
     - redis
     environment:
       SERVICE: gunicorn
-    ports:
-    - "${KC_FRONT_PORT}:80"
     restart: unless-stopped
 
 volumes:
