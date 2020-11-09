@@ -144,7 +144,6 @@ def fetch(url):
             state=Resource.STATE_FINISHED, status_code=504
         )
         Statistic.failures(1)
-        # TODO: remove the file
         return
 
     except Exception as exc:
@@ -154,7 +153,6 @@ def fetch(url):
             state=Resource.STATE_FINISHED, status_code=504
         )
         Statistic.failures(1)
-        # TODO: remove the file
         return
 
     # Check or save the size
@@ -165,8 +163,12 @@ def fetch(url):
                 size,
                 res.content_length,
             )
-            # TODO: do something
-            # TODO: set the status_code to 502 so it will be removed soon
+            # Set the status_code to 502 so it will be removed soon
+            Resource.objects.filter(pk=res.pk).update(
+                state=Resource.STATE_FINISHED, status_code=504
+            )
+            Statistic.download(size)
+            Statistic.failures(1)
     else:
         Resource.objects.filter(pk=res.pk).update(content_length=size)
 
