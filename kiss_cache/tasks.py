@@ -166,6 +166,7 @@ def fetch(url):
                 res.content_length,
             )
             # TODO: do something
+            # TODO: set the status_code to 502 so it will be removed soon
     else:
         Resource.objects.filter(pk=res.pk).update(content_length=size)
 
@@ -179,10 +180,15 @@ def fetch(url):
 
 @shared_task(ignore_result=True)
 def expire():
+    LOG.info("Removing failed resources")
+    query = Resource.objects.filter(state=Resource.STATE_FINISHED)
+    for res in query.exclude(status_code=200):
+        LOG.info("* '%s'", res.url)
+        res.delete()
+
     LOG.info("Expiring resources")
-    now = timezone.now()
     for res in Resource.objects.filter(state=Resource.STATE_FINISHED):
-        if res.created_at + timedelta(seconds=res.ttl) < now:
+        if res.created_at + timedelta(seconds=res.ttl) < timezone.now():
             LOG.info("* '%s'", res.url)
             res.delete()
     LOG.info("done")

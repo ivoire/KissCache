@@ -40,9 +40,9 @@ CELERY_WORKER_SEND_TASK_EVENTS = True
 
 # Setup the scheduler
 CELERY_BEAT_SCHEDULE = {
-    "expire-every-hour": {"task": "kiss_cache.tasks.expire", "schedule": 60 * 60}
+    "expire-every-minute": {"task": "kiss_cache.tasks.expire", "schedule": 60}
 }
-CELERY_BEAT_MAX_LOOP_INTERVAL = 30 * 60
+CELERY_BEAT_MAX_LOOP_INTERVAL = 30
 
 # List of networks that can fetch resources
 # By default the instance is fully open
