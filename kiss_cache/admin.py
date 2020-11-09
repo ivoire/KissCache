@@ -15,7 +15,7 @@ from kiss_cache.models import Resource, Statistic
 
 class ResourceAdmin(admin.ModelAdmin):
     list_display = ("url", "path", "state", "status_code", "ttl", "usage")
-    list_filter = ("state", "ttl")
+    list_filter = ("state", "status_code")
     ordering = ["url"]
     readonly_fields = ("created_at", "path", "url")
 
