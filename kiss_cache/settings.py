@@ -58,3 +58,6 @@ RESOURCE_QUOTA_AUTO_CLEAN_DELAY = 3600
 
 # Partial download retries
 RESOURCE_PARTIAL_DOWLOAD_RETRIES=10
+
+# Use the apache2 xsendfile module
+USE_XSENDFILE = True

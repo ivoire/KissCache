@@ -9,7 +9,7 @@
 
 import json
 
-from django.http import FileResponse, JsonResponse
+from django.http import FileResponse, HttpResponse, JsonResponse
 from django.http.response import StreamingHttpResponse
 from django.urls import reverse
 from django.utils import timezone
@@ -232,41 +232,40 @@ def test_api_fetch(client, db, mocker, settings, tmpdir):
     fetch = mocker.patch("kiss_cache.tasks.fetch.delay", mocked_fetch)
 
     ret = client.get(f"{reverse('api.fetch')}?url={URL}&ttl=42d")
-    assert isinstance(ret, FileResponse)
-    assert ret._closable_objects[0].name == str(
+    assert isinstance(ret, HttpResponse)
+    assert ret["X-Sendfile"] == str(
         tmpdir / "10/0680ad546ce6a577f42f52df33b4cfdca756859e664b8d7de329b150d09ce9"
     )
     assert ret.status_code == 200
     assert ret._headers["content-type"] == ("Content-Type", "text/html; charset=UTF-8")
-    assert ret._headers["content-length"] == ("Content-Length", "12")
-    assert next(ret.streaming_content) == b"Hello world!"
+    assert ret._headers["content-length"] == ("Content-Length", "0")
 
     # Download a second time
     ret = client.get(f"{reverse('api.fetch')}?url={URL}&ttl=42d")
-    assert isinstance(ret, FileResponse)
-    assert ret._closable_objects[0].name == str(
+    assert isinstance(ret, HttpResponse)
+    assert ret["X-Sendfile"] == str(
         tmpdir / "10/0680ad546ce6a577f42f52df33b4cfdca756859e664b8d7de329b150d09ce9"
     )
     assert ret.status_code == 200
     assert ret._headers["content-type"] == ("Content-Type", "text/html; charset=UTF-8")
-    assert ret._headers["content-length"] == ("Content-Length", "12")
-    assert next(ret.streaming_content) == b"Hello world!"
+    assert ret._headers["content-length"] == ("Content-Length", "0")
 
     # Download a third time and set a shorter ttl
     now = timezone.now()
     mocker.patch("django.utils.timezone.now", lambda: now)
     ret = client.get(f"{reverse('api.fetch')}?url={URL}&ttl=4d")
-    assert isinstance(ret, FileResponse)
-    assert ret._closable_objects[0].name == str(
+    assert isinstance(ret, HttpResponse)
+    assert ret["X-Sendfile"] == str(
         tmpdir / "10/0680ad546ce6a577f42f52df33b4cfdca756859e664b8d7de329b150d09ce9"
     )
     assert ret.status_code == 200
     assert ret._headers["content-type"] == ("Content-Type", "text/html; charset=UTF-8")
-    assert ret._headers["content-length"] == ("Content-Length", "12")
-    assert next(ret.streaming_content) == b"Hello world!"
+    assert ret._headers["content-length"] == ("Content-Length", "0")
     assert Resource.objects.get(url=URL).ttl == 345_600
 
     # Download a forth time: set the Content-Disposition
+    # Do not use xsendfile anymore
+    settings.USE_XSENDFILE = False
     ret = client.get(f"{reverse('api.fetch')}kernel?url={URL}")
     assert isinstance(ret, FileResponse)
     assert ret._closable_objects[0].name == str(
@@ -275,11 +274,11 @@ def test_api_fetch(client, db, mocker, settings, tmpdir):
     assert ret.status_code == 200
     assert ret._headers["content-type"] == ("Content-Type", "text/html; charset=UTF-8")
     assert ret._headers["content-length"] == ("Content-Length", "12")
+    assert next(ret.streaming_content) == b"Hello world!"
     assert ret._headers["content-disposition"] == (
         "Content-Disposition",
         "attachment; filename=kernel",
     )
-    assert next(ret.streaming_content) == b"Hello world!"
 
     # Download a fifth time with status_code = 404
     Resource.objects.filter(url=URL).update(status_code=404)

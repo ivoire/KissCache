@@ -38,6 +38,10 @@ class Resource(models.Model):
     status_code = models.IntegerField(default=0)
 
     @property
+    def fullpath(self):
+        return str(pathlib.Path(settings.DOWNLOAD_PATH) / self.path)
+
+    @property
     def path(self):
         """ Compute the path of the local file """
         # TODO: take created_at into account

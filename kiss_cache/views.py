@@ -256,8 +256,13 @@ def api_fetch(request, filename=None):
         if res.status_code != 200:
             return HttpResponse(status=res.status_code)
 
-        # Just return the file
-        response = FileResponse(res.open("rb"))
+        # Use xsendfile or just return the file
+        if settings.USE_XSENDFILE:
+            response = HttpResponse()
+            response["X-Sendfile"] = res.fullpath.encode("utf-8")
+        else:
+            response = FileResponse(res.open("rb"))
+
         if res.content_type:
             response["Content-Type"] = res.content_type
         if filename:
