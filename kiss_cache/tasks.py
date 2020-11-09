@@ -57,85 +57,127 @@ def fetch(url):
         Statistic.failures(1)
         return
 
-    # Download the resource
-    # * stream back the result
-    # * only accept plain content (not gzipped) so Content-Length is known
-    # * with a timeout
-    try:
-        req = requests_retry().get(
-            res.url,
-            stream=True,
-            headers={"Accept-Encoding": "", "User-Agent": f"KissCache/{__version__}"},
-            timeout=settings.DOWNLOAD_TIMEOUT,
-        )
-    except requests.RequestException as exc:
-        LOG.error("Unable to connect to '%s'", url)
-        LOG.exception(exc)
-        Resource.objects.filter(pk=res.pk).update(
-            state=Resource.STATE_FINISHED, status_code=502
-        )
-        Statistic.failures(1)
-        return
-
-    # Update the status code
-    Resource.objects.filter(pk=res.pk).update(status_code=req.status_code)
-    if req.status_code != 200:
-        Resource.objects.filter(pk=res.pk).update(state=Resource.STATE_FINISHED)
-        Statistic.failures(1)
-        LOG.error("'%s' returned %d", url, req.status_code)
-        req.close()
-        return
-    res.refresh_from_db()
-
-    # Store Content-Length and Content-Type
-    Resource.objects.filter(pk=res.pk).update(
-        content_length=req.headers.get("Content-Length"),
-        content_type=req.headers.get("Content-Type", ""),
-    )
-    res.refresh_from_db()
-
     # Keep track of the total amount of data
     size = 0
+    retries = 0
+    max_retries = settings.RESOURCE_PARTIAL_DOWLOAD_RETRIES
     # TODO: make this idempotent to allow for task restart
     try:
-        with res.open(mode="wb") as f_out:
-            # Informe the caller about the current state
-            Resource.objects.filter(pk=res.pk).update(state=Resource.STATE_DOWNLOADING)
+        while retries < max_retries:
+            # Download the resource
+            # * stream back the result
+            # * only accept plain content (not gzipped) so Content-Length is known
+            # * with a timeout
+            try:
+                # Use a range header if this is a retry
+                headers = {
+                    "Accept-Encoding": "",
+                    "User-Agent": f"KissCache/{__version__}",
+                }
+                if size:
+                    headers["Range"] = f"bytes={size}-"
+
+                req = requests_retry().get(
+                    res.url,
+                    stream=True,
+                    headers=headers,
+                    timeout=settings.DOWNLOAD_TIMEOUT,
+                )
+            except requests.RequestException as exc:
+                LOG.error("Unable to connect to '%s'", url)
+                LOG.exception(exc)
+                Resource.objects.filter(pk=res.pk).update(
+                    state=Resource.STATE_FINISHED, status_code=502
+                )
+                Statistic.failures(1)
+                return
+
+            # When retrying range requests should work, hence status_code is 206
+            if retries > 0:
+                if req.status_code != 206:
+                    LOG.error("Unable to issue range requests when retrying")
+                    req.status_code = 502
+                else:
+                    req.status_code = 200
+
+            # Update the status code
+            if req.status_code != 200:
+                Resource.objects.filter(pk=res.pk).update(
+                    status_code=req.status_code, state=Resource.STATE_FINISHED
+                )
+                Statistic.failures(1)
+                LOG.error("'%s' returned %d", url, req.status_code)
+                req.close()
+                return
+            Resource.objects.filter(pk=res.pk).update(status_code=200)
             res.refresh_from_db()
 
-            # variables to log progress
-            last_logged_value = 0
-            start = time.time()
-            # Loop on the data
-            iterator = req.iter_content(
-                chunk_size=settings.DOWNLOAD_CHUNK_SIZE, decode_unicode=False
-            )
-            for data in iterator:
-                size += f_out.write(data)
+            if retries == 0:
+                # Store Content-Length and Content-Type
+                Resource.objects.filter(pk=res.pk).update(
+                    content_length=req.headers.get("Content-Length"),
+                    content_type=req.headers.get("Content-Type", ""),
+                )
+                res.refresh_from_db()
 
-                if res.content_length:
-                    percent = math.floor(size / float(res.content_length) * 100)
-                    if percent >= last_logged_value + 5:
-                        last_logged_value = percent
-                        LOG.info(
-                            "progress %3d%% (%dMB)", percent, int(size / (1024 * 1024))
-                        )
-                else:
-                    if size >= last_logged_value + 25 * 1024 * 1024:
-                        last_logged_value = size
-                        LOG.info("progress %dMB", int(size / (1024 * 1024)))
+            # When retrying, append to the file
+            mode = "wb" if retries == 0 else "ab"
+            with res.open(mode=mode) as f_out:
+                # Informe the caller about the current state
+                Resource.objects.filter(pk=res.pk).update(
+                    state=Resource.STATE_DOWNLOADING
+                )
+                res.refresh_from_db()
 
-            # Log the speed
-            end = time.time()
-            speed = "??"
-            with contextlib.suppress(ZeroDivisionError):
-                speed = "%0.2f" % round(size / (1024 * 1024 * (end - start)), 2)
-            LOG.info(
-                "%dMB downloaded in %0.2fs (%sMB/s)",
-                size / (1024 * 1024),
-                round(end - start, 2),
-                speed,
+                # variables to log progress
+                last_logged_value = 0
+                start = time.time()
+                # Loop on the data
+                iterator = req.iter_content(
+                    chunk_size=settings.DOWNLOAD_CHUNK_SIZE, decode_unicode=False
+                )
+                for data in iterator:
+                    size += f_out.write(data)
+
+                    if res.content_length:
+                        percent = math.floor(size / float(res.content_length) * 100)
+                        if percent >= last_logged_value + 5:
+                            last_logged_value = percent
+                            LOG.info(
+                                "progress %3d%% (%dMB)",
+                                percent,
+                                int(size / (1024 * 1024)),
+                            )
+                    else:
+                        if size >= last_logged_value + 25 * 1024 * 1024:
+                            last_logged_value = size
+                            LOG.info("progress %dMB", int(size / (1024 * 1024)))
+
+                # Log the speed
+                end = time.time()
+                speed = "??"
+                with contextlib.suppress(ZeroDivisionError):
+                    speed = "%0.2f" % round(size / (1024 * 1024 * (end - start)), 2)
+                LOG.info(
+                    "%dMB downloaded in %0.2fs (%sMB/s)",
+                    size / (1024 * 1024),
+                    round(end - start, 2),
+                    speed,
+                )
+            # Retry if kisscache was unable to download the full file
+            if not res.content_length:
+                break
+            if res.content_length == size:
+                break
+
+            LOG.warning(
+                "The total size (%d) is not equal to the Content-Length (%d)",
+                size,
+                res.content_length,
             )
+            LOG.warning("Retrying (%d/%d) after 5 seconds", retries, max_retries)
+            time.sleep(5)
+            retries += 1
 
     except requests.RequestException as exc:
         LOG.error("Unable to fetch '%s'", url)
@@ -187,6 +229,7 @@ def expire():
     for res in query.exclude(status_code=200):
         LOG.info("* '%s'", res.url)
         res.delete()
+    LOG.info("done")
 
     LOG.info("Expiring resources")
     for res in Resource.objects.filter(state=Resource.STATE_FINISHED):

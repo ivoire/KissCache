@@ -55,3 +55,6 @@ RESOURCE_QUOTA = 5 * 1024 * 1024 * 1024
 RESOURCE_QUOTA_AUTO_CLEAN = 75
 # Only consider resources that where not used for N seconds
 RESOURCE_QUOTA_AUTO_CLEAN_DELAY = 3600
+
+# Partial download retries
+RESOURCE_PARTIAL_DOWLOAD_RETRIES=10

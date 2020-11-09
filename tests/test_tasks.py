@@ -314,6 +314,7 @@ def test_expire(caplog, db, mocker, settings, tmpdir):
     assert caplog.record_tuples == [
         ("kiss_cache.tasks", 20, "Removing failed resources"),
         ("kiss_cache.tasks", 20, "* 'https://example.com/rootfs.img.bz2'"),
+        ("kiss_cache.tasks", 20, "done"),
         ("kiss_cache.tasks", 20, "Expiring resources"),
         ("kiss_cache.tasks", 20, "* 'https://example.com/nfsrootfs.tar.gz'"),
         ("kiss_cache.tasks", 20, "done"),
