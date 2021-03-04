@@ -132,26 +132,33 @@ def fetch(url):
                 # variables to log progress
                 last_logged_value = 0
                 start = time.time()
-                # Loop on the data
-                iterator = req.iter_content(
-                    chunk_size=settings.DOWNLOAD_CHUNK_SIZE, decode_unicode=False
-                )
-                for data in iterator:
-                    size += f_out.write(data)
 
-                    if res.content_length:
-                        percent = math.floor(size / float(res.content_length) * 100)
-                        if percent >= last_logged_value + 5:
-                            last_logged_value = percent
-                            LOG.info(
-                                "progress %3d%% (%dMB)",
-                                percent,
-                                int(size / (1024 * 1024)),
-                            )
-                    else:
-                        if size >= last_logged_value + 25 * 1024 * 1024:
-                            last_logged_value = size
-                            LOG.info("progress %dMB", int(size / (1024 * 1024)))
+                force_retry = False
+                try:
+                    # Loop on the data
+                    iterator = req.iter_content(
+                        chunk_size=settings.DOWNLOAD_CHUNK_SIZE, decode_unicode=False
+                    )
+                    for data in iterator:
+                        size += f_out.write(data)
+
+                        if res.content_length:
+                            percent = math.floor(size / float(res.content_length) * 100)
+                            if percent >= last_logged_value + 5:
+                                last_logged_value = percent
+                                LOG.info(
+                                    "progress %3d%% (%dMB)",
+                                    percent,
+                                    int(size / (1024 * 1024)),
+                                )
+                        else:
+                            if size >= last_logged_value + 25 * 1024 * 1024:
+                                last_logged_value = size
+                                LOG.info("progress %dMB", int(size / (1024 * 1024)))
+                except requests.RequestException as exc:
+                    LOG.error("Unable to fetch '%s'", url)
+                    LOG.exception(exc)
+                    force_retry = True
 
                 # Log the speed
                 end = time.time()
@@ -165,10 +172,11 @@ def fetch(url):
                     speed,
                 )
             # Retry if kisscache was unable to download the full file
-            if not res.content_length:
-                break
-            if res.content_length == size:
-                break
+            if not force_retry:
+                if not res.content_length:
+                    break
+                if res.content_length == size:
+                    break
 
             LOG.warning(
                 "The total size (%d) is not equal to the Content-Length (%d)",
@@ -178,15 +186,6 @@ def fetch(url):
             LOG.warning("Retrying (%d/%d) after 5 seconds", retries, max_retries)
             time.sleep(5)
             retries += 1
-
-    except requests.RequestException as exc:
-        LOG.error("Unable to fetch '%s'", url)
-        LOG.exception(exc)
-        Resource.objects.filter(pk=res.pk).update(
-            state=Resource.STATE_FINISHED, status_code=504
-        )
-        Statistic.failures(1)
-        return
 
     except Exception as exc:
         LOG.error("Unable to fetch '%s'", url)
