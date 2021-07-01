@@ -19,8 +19,7 @@ from django.conf import settings
 
 
 class Resource(models.Model):
-    # TODO: max_length=?
-    url = models.URLField(unique=True)
+    url = models.URLField(unique=True, max_length=512)
     created_at = models.DateTimeField(auto_now_add=True)
     ttl = models.IntegerField(default=60 * 60 * 24)
     content_length = models.BigIntegerField(blank=True, null=True)
