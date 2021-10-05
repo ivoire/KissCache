@@ -1,18 +1,18 @@
-FROM debian:buster-slim
+FROM debian:bullseye-slim
 
 LABEL maintainer="Rémi Duraffort <remi.duraffort@linaro.org>"
 
 ENV DEBIAN_FRONTEND noninteractive
 
 # Install dependencies
-RUN echo 'deb http://deb.debian.org/debian buster-backports main' > /etc/apt/sources.list.d/backports.list && \
+RUN echo 'deb http://deb.debian.org/debian bullseye-backports main' > /etc/apt/sources.list.d/backports.list && \
     mkdir -p /usr/share/man/man1 /usr/share/man/man7 && \
     apt-get update -q && \
-    apt-get install --no-install-recommends --yes -t buster-backports gunicorn python3-django && \
+    apt-get install --no-install-recommends --yes gunicorn python3-django && \
     apt-get install --no-install-recommends --yes apache2 libapache2-mod-xsendfile && \
     apt-get install --no-install-recommends --yes python3-celery python3-django-auth-ldap python3-pip python3-psycopg2 python3-redis python3-requests python3-whitenoise python3-yaml && \
     apt-get install --no-install-recommends --yes libjs-jquery && \
-    python3 -m pip install --upgrade sentry-sdk==1.1.0 && \
+    python3 -m pip install --upgrade sentry-sdk==1.4.3 && \
     # Configure apache2
     a2dissite 000-default && \
     a2enmod proxy_http && \
