@@ -13,7 +13,7 @@ else
   ARCH="arm64"
 
   # Default values
-  CI_REGISTRY_IMAGE=${CI_REGISTRY_IMAGE:-"registry.gitlab.com/linaro/kisscache"}-$ARCH
+  CI_REGISTRY_IMAGE="${CI_REGISTRY_IMAGE:-"registry.gitlab.com/linaro/kisscache"}/kisscache-$ARCH"
 
   # Build the docker image
   # Unshallow the git repository to allow git describe to work
