@@ -18,7 +18,7 @@ __all__ = [
 
 
 def git_describe():
-    import subprocess
+    import subprocess  # pylint: disable=import-outside-toplevel
 
     try:
         # git describe?

@@ -14,4 +14,4 @@ class KissCacheConfig(AppConfig):
     name = "kiss_cache"
 
     def ready(self):
-        import kiss_cache.signals
+        import kiss_cache.signals  # pylint: disable=import-outside-toplevel
