@@ -42,7 +42,7 @@ class Resource(models.Model):
 
     @property
     def path(self):
-        """ Compute the path of the local file """
+        """Compute the path of the local file"""
         # TODO: take created_at into account
         m = hashlib.sha256()
         m.update(self.url.encode("utf-8"))
@@ -74,7 +74,7 @@ class Resource(models.Model):
 
     @classmethod
     def total_size(cls):
-        """ Compute the sum of the size of all Resources """
+        """Compute the sum of the size of all Resources"""
         size = cls.objects.aggregate(size=Sum("content_length"))["size"]
         return 0 if size is None else size
 
@@ -85,13 +85,13 @@ class Resource(models.Model):
 
     @classmethod
     def is_over_quota(cls):
-        """ Returns True if the quota is already fully used """
+        """Returns True if the quota is already fully used"""
         if settings.RESOURCE_QUOTA <= 0:
             return False
         return bool(cls.total_size() >= settings.RESOURCE_QUOTA)
 
     def progress(self):
-        """ Return a string with the download progress """
+        """Return a string with the download progress"""
         size = 0
         with contextlib.suppress(Exception):
             size = (pathlib.Path(settings.DOWNLOAD_PATH) / self.path).stat().st_size
@@ -101,7 +101,7 @@ class Resource(models.Model):
         return "??"
 
     def open(self, mode):
-        """ Open the underlying file and return the file object """
+        """Open the underlying file and return the file object"""
         return (pathlib.Path(settings.DOWNLOAD_PATH) / self.path).open(mode)
 
     def stream(self):
