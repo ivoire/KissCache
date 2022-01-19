@@ -89,10 +89,10 @@ then
   echo "done"
   echo ""
 
-  exec python3 -m celery -A website worker --loglevel=info
+  exec python3 -m celery -A website worker --loglevel=INFO
 elif [ "$SERVICE" = "celery-beat" ]
 then
-  exec python3 -m celery -A website beat --loglevel=info --pidfile= -s /var/cache/kiss-cache/celerybeat-schedule
+  exec python3 -m celery -A website beat --loglevel=INFO --pidfile= -s /var/cache/kiss-cache/celerybeat-schedule
 elif [ "$SERVICE" = "gunicorn" ]
 then
   echo "Waiting for postgresql"
