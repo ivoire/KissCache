@@ -53,7 +53,7 @@ test-debian-11:
 ###########
 .analyze: &analyze
   <<: *job
-  image: hub.lavasoftware.org/lava/ci-images/amd64/analyze
+  image: debian:bullseye
   stage: analyze
   except:
     refs:
