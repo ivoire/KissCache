@@ -259,7 +259,12 @@ def api_fetch(request, filename=None):
         # Use xsendfile or just return the file
         if settings.USE_XSENDFILE:
             response = HttpResponse()
-            response["X-Sendfile"] = res.fullpath.encode("utf-8")
+            if settings.XSENDFILE_BACKEND == "apache2":
+                response["X-Sendfile"] = res.fullpath.encode("utf-8")
+            elif settings.XSENDFILE_BACKEND == "nginx":
+                response["X-Accel-Redirect"] = ("/internal/" + res.path).encode("utf-8")
+            else:
+                raise NotImplementedError("Unknown xsendfile backend")
         else:
             response = FileResponse(res.open("rb"))
 
