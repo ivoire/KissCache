@@ -52,6 +52,7 @@ services:
 
   web:
     image: ${KC_IMAGE}
+    scale: ${KC_WEB_SCALE}
     volumes:
     - cache:/var/cache/kiss-cache/
     - ./share/kiss-cache.yaml:/etc/kiss-cache.yaml
