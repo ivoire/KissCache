@@ -9,14 +9,12 @@ RUN echo 'deb http://deb.debian.org/debian bullseye-backports main' > /etc/apt/s
     mkdir -p /usr/share/man/man1 /usr/share/man/man7 && \
     apt-get update -q && \
     apt-get install --no-install-recommends --yes gunicorn python3-django && \
-    apt-get install --no-install-recommends --yes apache2 libapache2-mod-xsendfile && \
+    apt-get install --no-install-recommends --yes nginx && \
     apt-get install --no-install-recommends --yes python3-celery python3-django-auth-ldap python3-pip python3-psycopg2 python3-redis python3-requests python3-whitenoise python3-yaml && \
     apt-get install --no-install-recommends --yes libjs-jquery && \
     python3 -m pip install --upgrade sentry-sdk==1.4.3 && \
-    # Configure apache2
-    a2dissite 000-default && \
-    a2enmod proxy_http && \
-    a2enmod xsendfile && \
+    # Drop default nginx site
+    rm /etc/nginx/sites-enabled/default && \
     # Cleanup
     apt-get clean && \
     find /usr/lib/python3/dist-packages/ -name '__pycache__' -type d -exec rm -r "{}" + && \

@@ -73,11 +73,9 @@ wait_migration() {
     done
 }
 
-if [ "$SERVICE" = "apache" ]
+if [ "$SERVICE" = "nginx" ]
 then
-  export APACHE_CONFDIR=/etc/apache2
-  export APACHE_ENVVARS=/etc/apache2/envvars
-  exec apache2ctl -DFOREGROUND
+  exec nginx -c /etc/nginx/kiss-cache.conf -g 'daemon off;'
 elif [ "$SERVICE" = "celery-worker" ]
 then
   echo "Waiting for postgresql"
