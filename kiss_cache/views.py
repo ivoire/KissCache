@@ -56,6 +56,7 @@ def help(request):
             "user_ip": get_user_ip(request),
             "user_ip_allowed": is_client_allowed(request),
             "api_url": request.build_absolute_uri(reverse("api.fetch")),
+            "XSENDFILE_BACKEND": settings.XSENDFILE_BACKEND,
         },
     )
 
