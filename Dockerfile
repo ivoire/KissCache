@@ -12,7 +12,7 @@ RUN echo 'deb http://deb.debian.org/debian bullseye-backports main' > /etc/apt/s
     apt-get install --no-install-recommends --yes nginx && \
     apt-get install --no-install-recommends --yes python3-celery python3-django-auth-ldap python3-pip python3-psycopg2 python3-redis python3-requests python3-whitenoise python3-yaml && \
     apt-get install --no-install-recommends --yes libjs-jquery && \
-    python3 -m pip install --upgrade sentry-sdk==1.4.3 && \
+    python3 -m pip install --upgrade sentry-sdk==1.5.6 && \
     # Drop default nginx site
     rm /etc/nginx/sites-enabled/default && \
     # Cleanup
