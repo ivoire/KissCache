@@ -9,7 +9,7 @@ RUN echo 'deb http://deb.debian.org/debian bullseye-backports main' > /etc/apt/s
     mkdir -p /usr/share/man/man1 /usr/share/man/man7 && \
     apt-get update -q && \
     apt-get install --no-install-recommends --yes gunicorn python3-django && \
-    apt-get install --no-install-recommends --yes nginx && \
+    apt-get install --no-install-recommends --yes nginx postgresql-client-13 && \
     apt-get install --no-install-recommends --yes python3-celery python3-django-auth-ldap python3-pip python3-psycopg2 python3-redis python3-requests python3-whitenoise python3-yaml && \
     apt-get install --no-install-recommends --yes libjs-jquery && \
     python3 -m pip install --upgrade sentry-sdk==1.5.6 && \
