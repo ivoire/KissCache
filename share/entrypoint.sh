@@ -87,7 +87,11 @@ then
   echo "done"
   echo ""
 
-  exec python3 -m celery -A website worker --loglevel=INFO
+  if [ "$CELERY_CONCURRENCY" != "" ]
+  then
+    CELERY_CONCURRENCY="--concurrency $CELERY_CONCURRENCY"
+  fi
+  exec python3 -m celery -A website worker $CELERY_CONCURRENCY --loglevel=INFO
 elif [ "$SERVICE" = "celery-beat" ]
 then
   exec python3 -m celery -A website beat --loglevel=INFO --pidfile= -s /var/cache/kiss-cache/celerybeat-schedule
@@ -110,6 +114,6 @@ then
 
   GUNICORN_THREADS=${GUNICORN_THREADS:-10}
   GUNICORN_WORKERS=${GUNICORN_WORKERS:-4}
-  echo "Statrting gunicorn with workers=$GUNICORN_WORKERS and threads=$GUNICORN_THREADS"
+  echo "Starting gunicorn with workers=$GUNICORN_WORKERS and threads=$GUNICORN_THREADS"
   exec gunicorn3 --log-level debug --log-file - --access-logfile - --bind 0.0.0.0:80 --threads "$GUNICORN_THREADS" --workers "$GUNICORN_WORKERS" --worker-tmp-dir /dev/shm website.wsgi
 fi
