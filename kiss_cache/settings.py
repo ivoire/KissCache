@@ -61,3 +61,5 @@ RESOURCE_PARTIAL_DOWLOAD_RETRIES = 10
 
 # Use the apache2 xsendfile module
 USE_XSENDFILE = True
+# xsendfile backend ("nginx" or "apache2")
+XSENDFILE_BACKEND = "nginx"

@@ -37,6 +37,9 @@
     <p>This instance is open to every users.</p>
     {% endif %}
     <p>Your current IP <code>{{ user_ip }}</code> {{ user_ip_allowed|yesno:"can,can't" }} use this instance.</p>
+
+    <h2>XSenFile backend</h2>
+    <p>This instance is using XSenFile for {{ XSENDFILE_BACKEND }}.</p>
   </div>
 </div>
 {% endblock body %}
