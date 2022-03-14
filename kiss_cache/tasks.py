@@ -93,7 +93,7 @@ def fetch(url):
                 return
 
             # When retrying range requests should work, hence status_code is 206
-            if retries > 0:
+            if retries > 0 and size:
                 if req.status_code != 206:
                     LOG.error("Unable to issue range requests when retrying")
                     req.status_code = 502
