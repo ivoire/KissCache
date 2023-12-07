@@ -29,7 +29,7 @@ Installing
 
 KissCache is providing a docker-compose that will start the required services:
 
-    git clone https://git.lavasoftware.org/ivoire/kisscache
+    git clone https://gitlab.com/linaro/kisscache
     make
 
 The frontend will be available at http://localhost:8001/

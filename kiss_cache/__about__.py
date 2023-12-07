@@ -33,5 +33,5 @@ __author__ = "Rémi Duraffort"
 __author_email__ = "remi.duraffort@linaro.org"
 __description__ = "A simple and stupid cache service"
 __license__ = "MIT"
-__url__ = "https://git.lavasoftware.org/ivoire/KissCache"
+__url__ = "https://gitlab.com/linaro/KissCache"
 __version__ = git_describe()
